@@ -1,0 +1,78 @@
+#######################################
+# Syntax Coloring Map Task
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DS3231AlarmOne	KEYWORD1
+DS3231AlarmTwo	KEYWORD1
+RtcDS3231	KEYWORD1
+RtcTemperature	KEYWORD1
+RtcDateTime	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+Begin	KEYWORD2
+IsDateTimeValid	KEYWORD2
+GetIsRunning	KEYWORD2
+SetIsRunning	KEYWORD2
+SetDateTime	KEYWORD2
+GetDateTime	KEYWORD2
+GetTemperature	KEYWORD2
+Enable32kHzPin	KEYWORD2
+SetSquareWavePin	KEYWORD2
+SetSquareWavePinClockFrequency	KEYWORD2
+SetAlarmOne	KEYWORD2
+SetAlarmTwo	KEYWORD2
+GetAlarmOne	KEYWORD2
+GetAlarmTwo	KEYWORD2
+LatchAlarmsTriggeredFlags	KEYWORD2
+ForceTemperatureCompensationUpdate	KEYWORD2
+GetAgingOffset	KEYWORD2
+SetAgingOffset	KEYWORD2
+AsFloat	KEYWORD2
+AsWholeDegrees	KEYWORD2
+GetFractional	KEYWORD2
+Year	KEYWORD2
+Month	KEYWORD2
+Day	KEYWORD2
+Hour	KEYWORD2
+Minute	KEYWORD2
+Second	KEYWORD2
+DayOfWeek	KEYWORD2
+TotalSeconds	KEYWORD2
+DayOf	KEYWORD2
+ControlFlags	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+DS3231SquareWaveClock_1Hz	LITERAL1
+DS3231SquareWaveClock_1kHz	LITERAL1
+DS3231SquareWaveClock_4kHz	LITERAL1
+DS3231SquareWaveClock_8kHz	LITERAL1
+DS3231SquareWavePin_ModeNone	LITERAL1
+DS3231SquareWavePin_ModeBatteryBackup	LITERAL1
+DS3231SquareWavePin_ModeClock	LITERAL1
+DS3231SquareWavePin_ModeAlarmOne	LITERAL1
+DS3231SquareWavePin_ModeAlarmTwo	LITERAL1
+DS3231SquareWavePin_ModeAlarmBoth	LITERAL1
+DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch	LITERAL1
+DS3231AlarmOneControl_OncePerSecond	LITERAL1
+DS3231AlarmOneControl_SecondsMatch	LITERAL1
+DS3231AlarmOneControl_MinutesSecondsMatch	LITERAL1
+DS3231AlarmOneControl_HoursMinutesSecondsMatch	LITERAL1
+DS3231AlarmOneControl_HoursMinutesSecondsDayOfWeekMatch	LITERAL1
+DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch	LITERAL1
+DS3231AlarmTwoControl_OncePerMinute	LITERAL1
+DS3231AlarmTwoControl_MinutesMatch	LITERAL1
+DS3231AlarmTwoControl_HoursMinutesMatch	LITERAL1
+DS3231AlarmTwoControl_HoursMinutesDayOfWeekMatch	LITERAL1
+DS3231AlarmFlag_Alarm1	LITERAL1
+DS3231AlarmFlag_Alarm2	LITERAL1
+DS3231AlarmFlag_AlarmBoth	LITERAL1
