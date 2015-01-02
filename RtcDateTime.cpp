@@ -16,7 +16,7 @@ RtcDateTime::RtcDateTime(uint32_t secondsFrom2000)
     _second = secondsFrom2000 % 60;
     uint32_t timeFrom2000 = secondsFrom2000 / 60;
     _minute = timeFrom2000 % 60;
-    uint32_t hoursFrom2000 = timeFrom2000 /= 60;
+    timeFrom2000 /= 60;
     _hour = timeFrom2000 % 24;
     uint16_t days = timeFrom2000 / 24;
     uint8_t leapDays;
