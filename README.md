@@ -1,6 +1,6 @@
 # Rtc
 
-Arduino Real Time Clock library
+Arduino Real Time Clock library.  
 An RTC library with deep device support.
 
 ## Installing This Library
