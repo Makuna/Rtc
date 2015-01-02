@@ -104,27 +104,6 @@ void RtcDS3231::SetDateTime(const RtcDateTime& dt)
     Wire.endTransmission();
 }
 
-uint8_t BcdToBin24Hour(uint8_t bcdHour)
-{
-    uint8_t hour;
-    if (bcdHour & _BV(6))
-    {
-        // 12 hour mode, convert to 24
-        bool isPm = ((bcdHour & _BV(5)) != 0);
-
-        hour = BcdToUint8(bcdHour & 0x1f);
-        if (isPm)
-        {
-           hour += 12;
-        }
-    }
-    else
-    {
-        hour = BcdToUint8(bcdHour);
-    }
-    return hour;
-}
-
 RtcDateTime RtcDS3231::GetDateTime()
 {
     Wire.beginTransmission(DS3231_ADDRESS);
