@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #endif
 
-#include <RTC.h>
+
 #include <RtcDateTime.h>
 #include <RtcTemperature.h>
 
