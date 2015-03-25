@@ -10,15 +10,28 @@
 
 RtcDS3231 Rtc;
 
-#define RtcSquareWavePin 19 // int2
+// Interrupt Pin Lookup Table
+// (copied from Arduino Docs)
+//
+// CAUTION:  The interrupts are Arduino numbers NOT Atmel numbers
+//   and may not match (example, Mega2560 int.4 is actually Atmel Int2)
+//   this is only an issue if you plan to use the lower level interupt features
+//
+// Board           int.0    int.1   int.2   int.3   int.4   int.5
+// ---------------------------------------------------------------
+// Uno, Ethernet    2       3
+// Mega2560         2       3       21      20     [19]      18 
+// Leonardo         3       2       0       1       7
+
+#define RtcSquareWavePin 19 // Mega2560
+#define RtcSquareWaveInterrupt 4 // Mega2560
 
 // marked volatile so interrupt can safely modify them and
 // other code can safely read and modify them
 volatile uint16_t interuptCount = 0;
 volatile bool interuptFlag = false;
 
-// Interupt Service Routine for Int2
-ISR(INT2_vect) 
+void InteruptServiceRoutine()
 {
     // since this interupted any other running code,
     // don't do anything that takes long and especially avoid
@@ -77,10 +90,8 @@ void setup ()
     // throw away any old alarm state before we ran
     Rtc.LatchAlarmsTriggeredFlags();
 
-    // setup external interupt INT 2
-    EICRA = 0;              // clear all
-    EICRA |= _BV(ISC21);    // falling edge
-    EIMSK |= _BV(INT2);     // enable INT2 interrupt
+    // setup external interupt 
+    attachInterrupt(RtcSquareWaveInterrupt, InteruptServiceRoutine, FALLING);
 }
 
 void loop () 
