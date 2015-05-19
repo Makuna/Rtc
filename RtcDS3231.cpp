@@ -1,19 +1,18 @@
 
 
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include <Wire.h>
 #include "RtcUtility.h"
 #include "RtcDS3231.h"
 
 
-#if ARDUINO < 100
-#define Write(x) send(x) 
-#define Read(x) receive(x) 
-#else
 #define Write(x) write(static_cast<uint8_t>(x))
 #define Read(x) read(x)
-#endif
 
 //I2C Slave Address  
 #define DS3231_ADDRESS 0x68  

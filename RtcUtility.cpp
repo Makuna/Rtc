@@ -1,18 +1,12 @@
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
-#include "RtcUtility.h"
-
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
-#include <Arduino.h>
 #endif
+#include "RtcUtility.h"
 
 uint8_t BcdToUint8(uint8_t val)
 {

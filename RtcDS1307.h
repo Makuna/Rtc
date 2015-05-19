@@ -3,13 +3,7 @@
 #ifndef __RTCDS1307_H__
 #define __RTCDS1307_H__
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
-
 #include <RtcDateTime.h>
 
 enum DS1307SquareWaveOut

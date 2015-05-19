@@ -3,9 +3,11 @@
 Arduino Real Time Clock library.  
 An RTC library with deep device support.
 
+Now supports esp8266.
+
 ## Installing This Library
 
-Clone (Git) this project into Arduino/libraries/Rtc.  
+Clone (Git) this project into Documents/Arduino/libraries/Rtc.  
 It should now show up in the import list.
 
 ## Supported Devices
@@ -13,7 +15,7 @@ It should now show up in the import list.
 Full support including squarewave output pin and memory access
 
 ###DS3231 
-Full support including sqaurewave output pin and alarms.
+Full support including squarewave output pin and alarms.
 
 ## Samples
 ###DS1307 Simple

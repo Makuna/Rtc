@@ -3,7 +3,11 @@
 // DS3231 SDA --> SDA
 // DS3231 SCL --> SCL
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include <Wire.h>  // must be incuded here so that Arduino library object file references work
 #include <RtcDS3231.h>
 
@@ -19,7 +23,9 @@ void setup ()
 
     //--------RTC SETUP ------------
     Rtc.Begin();
-
+#if defined(ESP8266)
+    Wire.begin(0, 2);
+#endif
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     printDateTime(compiled);
     Serial.println();

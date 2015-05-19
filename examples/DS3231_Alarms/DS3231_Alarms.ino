@@ -4,7 +4,11 @@
 // DS3231 SCL --> SCL
 // SQW --->  (Pin19) Don't forget to pullup (4.7k to 10k to VCC)
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 #include <Wire.h>  // must be incuded here so that Arduino library object file references work
 #include <RtcDS3231.h>
 
@@ -49,6 +53,9 @@ void setup ()
 
     //--------RTC SETUP ------------
     Rtc.Begin();
+#if defined(ESP8266)
+    Wire.begin(0, 2);
+#endif
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
 

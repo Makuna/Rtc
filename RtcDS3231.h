@@ -3,12 +3,7 @@
 #ifndef __RTCDS3231_H__
 #define __RTCDS3231_H__
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
 #include <Arduino.h>
-#endif
-
 
 #include <RtcDateTime.h>
 #include <RtcTemperature.h>
