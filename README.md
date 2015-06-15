@@ -3,6 +3,8 @@
 Arduino Real Time Clock library.  
 An RTC library with deep device support.
 
+[![Donate](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6AA97KE54UJR4)
+
 Now supports esp8266.
 
 ## Installing This Library
