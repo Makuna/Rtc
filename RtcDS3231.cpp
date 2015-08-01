@@ -95,10 +95,19 @@ void RtcDS3231::SetDateTime(const RtcDateTime& dt)
     Wire.Write(Uint8ToBcd(dt.Minute()));
     Wire.Write(Uint8ToBcd(dt.Hour())); // 24 hour mode only
 
+    uint8_t year = dt.Year() - 2000;
+    uint8_t centuryFlag = 0;
+
+    if (year >= 100)
+    {
+        year -= 100;
+        centuryFlag = _BV(7);
+    }
+
     Wire.Write(Uint8ToBcd(dt.DayOfWeek()));
     Wire.Write(Uint8ToBcd(dt.Day()));
-    Wire.Write(Uint8ToBcd(dt.Month()));
-    Wire.Write(Uint8ToBcd(dt.Year() - 2000));
+    Wire.Write(Uint8ToBcd(dt.Month()) | centuryFlag);
+    Wire.Write(Uint8ToBcd(year));
 
     Wire.endTransmission();
 }

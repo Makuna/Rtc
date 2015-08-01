@@ -9,36 +9,13 @@
 #include <Arduino.h>
 
 
-static const uint8_t c_daysInMonth[] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+const uint8_t c_daysInMonth[] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
 
 RtcDateTime::RtcDateTime(uint32_t secondsFrom2000)
 {
-    _second = secondsFrom2000 % 60;
-    uint32_t timeFrom2000 = secondsFrom2000 / 60;
-    _minute = timeFrom2000 % 60;
-    timeFrom2000 /= 60;
-    _hour = timeFrom2000 % 24;
-    uint16_t days = timeFrom2000 / 24;
-    uint8_t leapDays;
-
-    for (_yearFrom2000 = 0; ; ++_yearFrom2000)
-    {
-        leapDays = (_yearFrom2000 % 4 == 0) ? 1 : 0;
-        if (days < 365U + leapDays)
-            break;
-        days -= 365 + leapDays;
-    }
-    for (_month = 1; ; ++_month)
-    {
-        uint8_t daysPerMonth = pgm_read_byte(c_daysInMonth + _month - 1);
-        if (leapDays && _month == 2)
-            daysPerMonth++;
-        if (days < daysPerMonth)
-            break;
-        days -= daysPerMonth;
-    }
-    _dayOfMonth = days + 1;
+    _initWithSecondsFrom2000<uint32_t>(secondsFrom2000);
 }
+
 
 uint8_t StringToUint8(const char* pString)
 {
@@ -103,9 +80,9 @@ RtcDateTime::RtcDateTime(const char* date, const char* time)
     _second = StringToUint8(time + 6);
 }
 
-uint16_t DaysSinceFirstOfYear2000(uint16_t year, uint8_t month, uint8_t dayOfMonth)
+template <typename T> T DaysSinceFirstOfYear2000(uint16_t year, uint8_t month, uint8_t dayOfMonth)
 {
-    uint16_t days = dayOfMonth;
+    T days = dayOfMonth;
     for (uint8_t indexMonth = 1; indexMonth < month; ++indexMonth)
     {
         days += pgm_read_byte(c_daysInMonth + indexMonth - 1);
@@ -117,19 +94,25 @@ uint16_t DaysSinceFirstOfYear2000(uint16_t year, uint8_t month, uint8_t dayOfMon
     return days + 365 * year + (year + 3) / 4 - 1;
 }
 
-uint32_t SecondsIn(uint16_t days, uint8_t hours, uint8_t minutes, uint8_t seconds)
+template <typename T> T SecondsIn(T days, uint8_t hours, uint8_t minutes, uint8_t seconds)
 {
     return ((days * 24L + hours) * 60 + minutes) * 60 + seconds;
 }
 
 uint8_t RtcDateTime::DayOfWeek() const
 {
-    uint16_t days = DaysSinceFirstOfYear2000(_yearFrom2000, _month, _dayOfMonth);
+    uint16_t days = DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
     return (days + 6) % 7; // Jan 1, 2000 is a Saturday, i.e. returns 6
 }
 
 uint32_t RtcDateTime::TotalSeconds() const
 {
-    uint16_t days = DaysSinceFirstOfYear2000(_yearFrom2000, _month, _dayOfMonth);
-    return SecondsIn(days, _hour, _minute, _second);
+    uint16_t days = DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
+    return SecondsIn<uint32_t>(days, _hour, _minute, _second);
+}
+
+uint64_t RtcDateTime::TotalSeconds64() const
+{
+    uint32_t days = DaysSinceFirstOfYear2000<uint32_t>(_yearFrom2000, _month, _dayOfMonth);
+    return SecondsIn<uint64_t>(days, _hour, _minute, _second);
 }
