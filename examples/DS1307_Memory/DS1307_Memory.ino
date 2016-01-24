@@ -1,7 +1,9 @@
 
 // CONNECTIONS:
-// DS3231 SDA --> SDA
-// DS3231 SCL --> SCL
+// DS1307 SDA --> SDA
+// DS1307 SCL --> SCL
+// DS1307 VCC --> 5v
+// DS1307 GND --> GND
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
@@ -27,9 +29,10 @@ void setup ()
 
     //--------RTC SETUP ------------
     Rtc.Begin();
-#if defined(ESP8266)
-    Wire.begin(0, 2);
-#endif
+
+    // if you are using ESP-01 then uncomment the line below to reset the pins to
+    // the available pins for SDA, SCL
+    // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     printDateTime(compiled);
@@ -39,6 +42,12 @@ void setup ()
     {
         Serial.println("RTC lost confidence in the DateTime!");
         Rtc.SetDateTime(compiled);
+    }
+
+    if (!Rtc.GetIsRunning())
+    {
+        Serial.println("RTC was not actively running, starting now");
+        Rtc.SetIsRunning(true);
     }
 
     RtcDateTime now = Rtc.GetDateTime();
@@ -64,7 +73,7 @@ void loop ()
 {
     if (!Rtc.IsDateTimeValid()) 
     {
-		// Common Cuases:
+        // Common Cuases:
         //    1) the battery on the device is low or even missing and the power line was disconnected
         Serial.println("RTC lost confidence in the DateTime!");
     }
@@ -121,17 +130,17 @@ void loop ()
 
 void printDateTime(const RtcDateTime& dt)
 {
-	char datestring[20];
+    char datestring[20];
 
-	snprintf_P(datestring, 
-			countof(datestring),
-			PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-			dt.Month(),
-			dt.Day(),
-			dt.Year(),
-			dt.Hour(),
-			dt.Minute(),
-			dt.Second() );
+    snprintf_P(datestring, 
+            countof(datestring),
+            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            dt.Month(),
+            dt.Day(),
+            dt.Year(),
+            dt.Hour(),
+            dt.Minute(),
+            dt.Second() );
     Serial.print(datestring);
 }
 
