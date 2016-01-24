@@ -2,6 +2,8 @@
 // CONNECTIONS:
 // DS3231 SDA --> SDA
 // DS3231 SCL --> SCL
+// DS3231 VCC --> 3.3v or 5v
+// DS3231 GND --> GND
 // SQW --->  (Pin19) Don't forget to pullup (4.7k to 10k to VCC)
 
 #if defined(ESP8266)
@@ -53,9 +55,9 @@ void setup ()
 
     //--------RTC SETUP ------------
     Rtc.Begin();
-#if defined(ESP8266)
-    Wire.begin(0, 2);
-#endif
+    // if you are using ESP-01 then uncomment the line below to reset the pins to
+    // the available pins for SDA, SCL
+    // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
 
@@ -63,6 +65,12 @@ void setup ()
     {
         Serial.println("RTC lost confidence in the DateTime!");
         Rtc.SetDateTime(compiled);
+    }
+
+    if (!Rtc.GetIsRunning())
+    {
+        Serial.println("RTC was not actively running, starting now");
+        Rtc.SetIsRunning(true);
     }
 
     RtcDateTime now = Rtc.GetDateTime();
