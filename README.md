@@ -34,3 +34,8 @@ This demonstrates how to turn off the Rtc clock so that the onboard battery will
 
 ###DS3231 Alarms
 This demonstrates how to set the alarms and check when the alarms are triggered.  This includes using the squarewave output to trigger an interrupt.
+
+## Connecting the Devices
+The RTC devices expose two digital wires labeled SDA and SCL.  These need to be connected to the wires exposed by your Arduino board labled the same way.  This varies from board to board so you will need to consult the Arduino reference documents for which pins are the SDA and SCL.
+For ESP8266, these default to SDA = GPIO04 and SCL = GPIO05.
+The RTC devices also require power.  Make sure that VCC is connected to the proper voltage that your device requires.  DS1307 requires 5v while the DS3231 can use either 3.3v or 5v.  The GND must be connected to the Arduino GND even if you are not powering the RTC from the Arduino voltage pins.
