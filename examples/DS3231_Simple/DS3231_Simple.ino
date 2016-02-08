@@ -86,9 +86,12 @@ void loop ()
     }
 
     RtcDateTime now = Rtc.GetDateTime();
-
     printDateTime(now);
     Serial.println();
+
+    RtcTemperature temp = Rtc.GetTemperature();
+    Serial.print(temp.AsFloat());
+    Serial.println("C");
 
     delay(10000); // ten seconds
 }
