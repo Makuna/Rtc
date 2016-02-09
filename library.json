@@ -1,0 +1,13 @@
+{
+  "name": "RTC by Makuna",
+  "keywords": "RTC, DS1307, DS3231, clock",
+  "description": "A library that makes interfacing DS1307 and DS3231 Real Time Clock modules easy.",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/Makuna/Rtc.git"
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}
+
