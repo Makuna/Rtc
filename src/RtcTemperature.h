@@ -16,7 +16,7 @@ public:
     float AsFloat()
     {
         float degrees = (float)integerDegrees;
-        degrees += ((degrees < 0) ? -1 : 1) * (float)decimalFraction;
+        degrees += (float)decimalFraction / ((degrees < 0) ? -100.0f : 100.0f) ;
         return degrees;
     }
 
