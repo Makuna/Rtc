@@ -7,6 +7,9 @@ An RTC library with deep device support.
 
 Now supports esp8266.
 
+For quick questions jump on Gitter and ask away.  
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Makuna/Rtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 ## Installing This Library
 
 Clone (Git) this project into Documents/Arduino/libraries/Rtc.  
