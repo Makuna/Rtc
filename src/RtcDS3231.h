@@ -76,12 +76,12 @@ public:
     }
 
 protected:
-    uint8_t _second;
-    uint8_t _minute;
-    uint8_t _hour;
-    uint8_t _dayOf;
-
     DS3231AlarmOneControl _flags;
+
+	uint8_t _dayOf;
+	uint8_t _hour;
+	uint8_t _minute;
+    uint8_t _second;  
 };
 
 // minutes accuracy
@@ -143,11 +143,11 @@ public:
     }
 
 protected:
-    uint8_t _minute;
-    uint8_t _hour;
-    uint8_t _dayOf;
-
     DS3231AlarmTwoControl _flags;
+
+	uint8_t _dayOf;
+	uint8_t _hour;
+	uint8_t _minute;
 };
 
 
