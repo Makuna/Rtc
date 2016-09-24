@@ -1,5 +1,7 @@
 # Rtc
 
+[![Join the chat at https://gitter.im/Makuna/Rtc](https://badges.gitter.im/Makuna/Rtc.svg)](https://gitter.im/Makuna/Rtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Arduino Real Time Clock library.  
 An RTC library with deep device support.
 
