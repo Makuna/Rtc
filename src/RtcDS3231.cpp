@@ -123,7 +123,7 @@ RtcDateTime RtcDS3231::GetDateTime()
     uint8_t minute = BcdToUint8(Wire.Read());
     uint8_t hour = BcdToBin24Hour(Wire.Read());
 
-    Wire.Read();  // throwing away day of week as we calculate it
+    uint8_t dayOfWeek = BcdToUint8(Wire.Read());
 
     uint8_t dayOfMonth = BcdToUint8(Wire.Read());
     uint8_t monthRaw = Wire.Read();
@@ -136,7 +136,7 @@ RtcDateTime RtcDS3231::GetDateTime()
     uint8_t month = BcdToUint8(monthRaw & 0x7f);
     
 
-    return RtcDateTime(year, month, dayOfMonth, hour, minute, second);
+    return RtcDateTime(year, month, dayOfMonth, deyOfWeek, hour, minute, second);
 }
 
 RtcTemperature RtcDS3231::GetTemperature()
