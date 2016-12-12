@@ -10,10 +10,20 @@
 #else
 #include <avr/pgmspace.h>
 #endif
-#include <Wire.h>  // must be incuded here so that Arduino library object file references work
+
+/* for software wire use below
+#include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS1307.h>
 
-RtcDS1307 Rtc;
+SoftwareWire myWire(SDA, SCL);
+RtcDS1307<SoftwareWire> Rtc(myWire);
+ for software wire use above */
+
+/* for normal hardware wire use below */
+#include <Wire.h> // must be included here so that Arduino library object file references work
+#include <RtcDS1307.h>
+RtcDS1307<TwoWire> Rtc(Wire);
+/* for normal hardware wire use above */
 
 void setup () 
 {
