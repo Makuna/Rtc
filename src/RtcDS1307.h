@@ -5,6 +5,29 @@
 
 #include <Arduino.h>
 #include <RtcDateTime.h>
+#include "RtcUtility.h"
+
+//I2C Slave Address  
+const uint8_t DS1307_ADDRESS = 0x68;
+
+//DS1307 Register Addresses
+const uint8_t DS1307_REG_TIMEDATE   = 0x00;
+const uint8_t DS1307_REG_STATUS     = 0x00;
+const uint8_t DS1307_REG_CONTROL    = 0x07;
+const uint8_t DS1307_REG_RAMSTART   = 0x08;
+const uint8_t DS1307_REG_RAMEND     = 0x3f;
+
+//DS1307 Register Data Size if not just 1
+const uint8_t DS1307_REG_TIMEDATE_SIZE = 7;
+
+// DS1307 Control Register Bits
+const uint8_t DS1307_RS0   = 0;
+const uint8_t DS1307_RS1   = 1;
+const uint8_t DS1307_SQWE  = 4;
+const uint8_t DS1307_OUT   = 7;
+
+// DS1307 Status Register Bits
+const uint8_t DS1307_CH       = 7;
 
 enum DS1307SquareWaveOut
 {
@@ -16,33 +39,175 @@ enum DS1307SquareWaveOut
     DS1307SquareWaveOut_Low =   0b00000000,
 };
 
-class RtcDS1307
+template<class T_WIRE_METHOD> class RtcDS1307
 {
 public:
-    static void Begin();
+    RtcDS1307(T_WIRE_METHOD& wire) :
+        _wire(wire)
+    {
+    }
 
-    static bool IsDateTimeValid()
+    void Begin()
+    {
+        _wire.begin();
+    }
+
+    bool IsDateTimeValid()
     {
         return GetIsRunning();
     }
 
-    static bool GetIsRunning();	
-    static void SetIsRunning(bool isRunning);
+    bool GetIsRunning()
+    {
+        uint8_t sreg = getReg(DS1307_REG_STATUS);
+        return !(sreg & _BV(DS1307_CH));
+    }
+    void SetIsRunning(bool isRunning)
+    {
+        uint8_t sreg = getReg(DS1307_REG_STATUS);
+        if (isRunning)
+        {
+            sreg &= ~_BV(DS1307_CH);
+        }
+        else
+        {
+            sreg |= _BV(DS1307_CH);
+        }
+        setReg(DS1307_REG_STATUS, sreg);
+    }
 
-    static void SetDateTime(const RtcDateTime& dt);	
-    static RtcDateTime GetDateTime();	
+    void SetDateTime(const RtcDateTime& dt)
+    {
+        // retain running state
+        uint8_t sreg = getReg(DS1307_REG_STATUS) & _BV(DS1307_CH);
 
-    static void SetMemory(uint8_t memoryAddress, uint8_t value);
-    static uint8_t GetMemory(uint8_t memoryAddress);
+        // set the date time
+        _wire.beginTransmission(DS1307_ADDRESS);
+        _wire.write(DS1307_REG_TIMEDATE);
 
-    static uint8_t SetMemory(uint8_t memoryAddress, const uint8_t* pValue, uint8_t countBytes);
-    static uint8_t GetMemory(uint8_t memoryAddress, uint8_t* pValue, uint8_t countBytes);
+        _wire.write(Uint8ToBcd(dt.Second()) | sreg);
+        _wire.write(Uint8ToBcd(dt.Minute()));
+        _wire.write(Uint8ToBcd(dt.Hour())); // 24 hour mode only
 
-    static void SetSquareWavePin(DS1307SquareWaveOut pinMode);
+        _wire.write(Uint8ToBcd(dt.DayOfWeek()));
+        _wire.write(Uint8ToBcd(dt.Day()));
+        _wire.write(Uint8ToBcd(dt.Month()));
+        _wire.write(Uint8ToBcd(dt.Year() - 2000));
+
+        _wire.endTransmission();
+    }
+    RtcDateTime GetDateTime()
+    {
+        _wire.beginTransmission(DS1307_ADDRESS);
+        _wire.write(DS1307_REG_TIMEDATE);
+        _wire.endTransmission();
+
+        _wire.requestFrom(DS1307_ADDRESS, DS1307_REG_TIMEDATE_SIZE);
+        uint8_t second = BcdToUint8(_wire.read() & 0x7F);
+        uint8_t minute = BcdToUint8(_wire.read());
+        uint8_t hour = BcdToBin24Hour(_wire.read());
+
+        _wire.read();  // throwing away day of week as we calculate it
+
+        uint8_t dayOfMonth = BcdToUint8(_wire.read());
+        uint8_t month = BcdToUint8(_wire.read());
+        uint16_t year = BcdToUint8(_wire.read()) + 2000;
+
+        return RtcDateTime(year, month, dayOfMonth, hour, minute, second);
+    }
+
+    void SetMemory(uint8_t memoryAddress, uint8_t value)
+    {
+        uint8_t address = memoryAddress + DS1307_REG_RAMSTART;
+        if (address <= DS1307_REG_RAMEND)
+        {
+            setReg(address, value);
+        }
+    }
+    uint8_t GetMemory(uint8_t memoryAddress)
+    {
+        uint8_t value = 0;
+        uint8_t address = memoryAddress + DS1307_REG_RAMSTART;
+        if (address <= DS1307_REG_RAMEND)
+        {
+            value = getReg(address);
+        }
+        return value;
+    }
+
+    uint8_t SetMemory(uint8_t memoryAddress, const uint8_t* pValue, uint8_t countBytes)
+    {
+        uint8_t address = memoryAddress + DS1307_REG_RAMSTART;
+        uint8_t countWritten = 0;
+        if (address <= DS1307_REG_RAMEND)
+        {
+            _wire.beginTransmission(DS1307_ADDRESS);
+            _wire.write(address);
+
+            while (countBytes > 0 && address <= DS1307_REG_RAMEND)
+            {
+                _wire.write(*pValue++);
+                address++;
+                countBytes--;
+                countWritten++;
+            }
+
+            _wire.endTransmission();
+        }
+        return countWritten;
+    }
+
+    uint8_t GetMemory(uint8_t memoryAddress, uint8_t* pValue, uint8_t countBytes)
+    {
+        uint8_t address = memoryAddress + DS1307_REG_RAMSTART;
+        uint8_t countRead = 0;
+        if (address <= DS1307_REG_RAMEND)
+        {
+            countBytes = min(countBytes, DS1307_REG_RAMEND - DS1307_REG_RAMSTART);
+            _wire.beginTransmission(DS1307_ADDRESS);
+            _wire.write(address);
+            _wire.endTransmission();
+
+            _wire.requestFrom(DS1307_ADDRESS, countBytes);
+
+            while (countBytes-- > 0)
+            {
+                *pValue++ = _wire.read();
+                countRead++;
+            }
+        }
+
+        return countRead;
+    }
+
+    void SetSquareWavePin(DS1307SquareWaveOut pinMode)
+    {
+        setReg(DS1307_REG_CONTROL, pinMode);
+    }
 
 private:
-    static uint8_t getReg(uint8_t regAddress);
-    static void setReg(uint8_t regAddress, uint8_t regValue);
+    T_WIRE_METHOD& _wire;
+
+    uint8_t getReg(uint8_t regAddress)
+    {
+        _wire.beginTransmission(DS1307_ADDRESS);
+        _wire.write(regAddress);
+        _wire.endTransmission();
+
+        // control register
+        _wire.requestFrom(DS1307_ADDRESS, (uint8_t)1);
+
+        uint8_t regValue = _wire.read();
+        return regValue;
+    }
+
+    void setReg(uint8_t regAddress, uint8_t regValue)
+    {
+        _wire.beginTransmission(DS1307_ADDRESS);
+        _wire.write(regAddress);
+        _wire.write(regValue);
+        _wire.endTransmission();
+    }
 };
 
 #endif // __RTCDS1307_H__
