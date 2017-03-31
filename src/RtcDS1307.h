@@ -16,6 +16,7 @@ const uint8_t DS1307_REG_STATUS     = 0x00;
 const uint8_t DS1307_REG_CONTROL    = 0x07;
 const uint8_t DS1307_REG_RAMSTART   = 0x08;
 const uint8_t DS1307_REG_RAMEND     = 0x3f;
+const uint8_t DS1307_REG_RAMSIZE = DS1307_REG_RAMEND - DS1307_REG_RAMSTART;
 
 //DS1307 Register Data Size if not just 1
 const uint8_t DS1307_REG_TIMEDATE_SIZE = 7;
@@ -163,7 +164,11 @@ public:
         uint8_t countRead = 0;
         if (address <= DS1307_REG_RAMEND)
         {
-            countBytes = min(countBytes, DS1307_REG_RAMEND - DS1307_REG_RAMSTART);
+            if (countBytes > DS1307_REG_RAMSIZE)
+            {
+                countBytes = DS1307_REG_RAMSIZE;
+            }
+
             _wire.beginTransmission(DS1307_ADDRESS);
             _wire.write(address);
             _wire.endTransmission();
