@@ -29,6 +29,31 @@ public:
     // RtcDateTime compileDateTime(__DATE__, __TIME__);
     RtcDateTime(const char* date, const char* time);
 
+    void setYear(uint16_t year)
+    {
+    	_yearFrom2000 = (year >= c_OriginYear) ? year - c_OriginYear : year;
+    }
+    void setMonth(uint8_t month)
+    {
+        _month = month;
+    }
+    void setDay(uint8_t dayOfMonth)
+    {
+        _dayOfMonth = dayOfMonth;
+    }
+    void setHour(uint8_t hour)
+    {
+        _hour = hour;
+    }
+    void setMinute(uint8_t minute)
+    {
+        _minute = minute;
+    }
+    void setSecond(uint8_t second)
+    {
+        _second = second;
+    }
+
     uint16_t Year() const
     {
         return c_OriginYear + _yearFrom2000;
