@@ -3,6 +3,8 @@
 
 #if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
 #endif
 
 uint8_t BcdToUint8(uint8_t val) {
