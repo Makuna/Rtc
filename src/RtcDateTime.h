@@ -3,6 +3,11 @@
 #ifndef __RTCDATETIME_H__
 #define __RTCDATETIME_H__
 
+// ESP32 complains if not included
+#if defined(ESP32)
+#include <inttypes.h>
+#endif
+
 const uint16_t c_OriginYear = 2000;
 const uint32_t c_Epoch32OfOriginYear = 946684800;
 extern const uint8_t c_daysInMonth[] PROGMEM;
