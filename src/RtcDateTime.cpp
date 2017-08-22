@@ -1,5 +1,5 @@
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
 #else
 #include <avr/pgmspace.h>
@@ -20,7 +20,7 @@ RtcDateTime::RtcDateTime(uint32_t secondsFrom2000)
 uint8_t StringToUint8(const char* pString)
 {
     uint8_t value = 0;
-    
+
     // skip leading 0 and spaces
     while ('0' == *pString || *pString == ' ')
     {

@@ -3,6 +3,11 @@
 #ifndef __RTCDATETIME_H__
 #define __RTCDATETIME_H__
 
+// ESP32 complains if not included
+#if defined(ESP32)
+#include <inttypes.h>
+#endif
+
 const uint16_t c_OriginYear = 2000;
 const uint32_t c_Epoch32OfOriginYear = 946684800;
 extern const uint8_t c_daysInMonth[] PROGMEM;
@@ -11,11 +16,11 @@ class RtcDateTime
 {
 public:
     RtcDateTime(uint32_t secondsFrom2000 = 0);
-    RtcDateTime(uint16_t year, 
+    RtcDateTime(uint16_t year,
             uint8_t month,
             uint8_t dayOfMonth,
-            uint8_t hour, 
-            uint8_t minute, 
+            uint8_t hour,
+            uint8_t minute,
             uint8_t second) :
             _yearFrom2000((year >= c_OriginYear) ? year - c_OriginYear : year),
             _month(month),
@@ -66,10 +71,17 @@ public:
         *this = after;
     }
 
+    // remove seconds
+    void operator -= (uint32_t seconds)
+    {
+        RtcDateTime before = RtcDateTime( TotalSeconds() - seconds );
+        *this = before;
+    }
+
     // allows for comparisons to just work (==, <, >, <=, >=, !=)
-    operator uint32_t() const 
-    { 
-        return TotalSeconds(); 
+    operator uint32_t() const
+    {
+        return TotalSeconds();
     }
 
     // Epoch32 support
