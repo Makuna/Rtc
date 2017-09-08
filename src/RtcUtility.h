@@ -3,7 +3,7 @@
 #define __RTCUTILITY_H__
 
 // ESP32 complains if not included
-#if defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
 #include <inttypes.h>
 #endif
 

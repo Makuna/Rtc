@@ -1,13 +1,6 @@
 
-#if defined(ESP8266) || defined(ESP32)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
-
-#include "RtcDateTime.h"
 #include <Arduino.h>
-
+#include "RtcDateTime.h"
 
 const uint8_t c_daysInMonth[] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
 
