@@ -5,12 +5,6 @@
 // DS3231 VCC --> 3.3v or 5v
 // DS3231 GND --> GND
 
-#if defined(ESP8266)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
-
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>

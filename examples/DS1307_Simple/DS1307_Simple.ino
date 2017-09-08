@@ -5,12 +5,6 @@
 // DS1307 VCC --> 5v
 // DS1307 GND --> GND
 
-#if defined(ESP8266)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
-
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS1307.h>

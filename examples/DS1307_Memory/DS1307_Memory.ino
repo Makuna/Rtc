@@ -7,12 +7,6 @@
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-#if defined(ESP8266)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
-
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS1307.h>
