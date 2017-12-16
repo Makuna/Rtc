@@ -26,6 +26,7 @@ void setup ()
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
+    Serial.println();
     Serial.println(__TIME__);
 
     //--------RTC SETUP ------------
