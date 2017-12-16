@@ -5,12 +5,6 @@
 // DS3231 VCC --> 3.3v or 5v
 // DS3231 GND --> GND
 
-#if defined(ESP8266)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
-
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
@@ -85,6 +79,7 @@ void setup ()
     {
         Serial.println("RTC is the same as compile time! (not expected but all is fine)");
     }
+    Serial.println();
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
@@ -102,7 +97,7 @@ void loop ()
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    // Force a temperature A/D read
+    // Force a temperature A/D conversion
     Rtc.ForceTemperatureCompensationUpdate( true );
 
     // Output temperature in various formats
