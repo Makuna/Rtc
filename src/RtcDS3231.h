@@ -244,6 +244,7 @@ public:
         uint8_t creg = getReg(DS3231_REG_CONTROL);
         return !(creg & _BV(DS3231_EOSC));
     }
+	
     void SetIsRunning(bool isRunning)
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
@@ -323,12 +324,10 @@ public:
         _wire.endTransmission();
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
-        int8_t degrees = _wire.read();
-        // fraction is just the upper bits
-        // representing 1/4 of a degree
-        uint8_t fract = (_wire.read() >> 6) * 25;
+        int8_t  mstmp = _wire.read();  // MS byte, scaled 2's comp. temperature
+        uint8_t lstmp = _wire.read();  // LS byte, ............................
 
-        return RtcTemperature(degrees, fract);
+        return RtcTemperature( mstmp, lstmp );
     }
 
     void Enable32kHzPin(bool enable)
@@ -346,6 +345,7 @@ public:
 
         setReg(DS3231_REG_STATUS, sreg);
     }
+
     void SetSquareWavePin(DS3231SquareWavePinMode pinMode)
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
@@ -394,7 +394,6 @@ public:
         setReg(DS3231_REG_CONTROL, creg);
     }
 
-
     void SetAlarmOne(const DS3231AlarmOne& alarm)
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -408,6 +407,7 @@ public:
 
         _wire.endTransmission();
     }
+
     void SetAlarmTwo(const DS3231AlarmTwo& alarm)
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -420,6 +420,7 @@ public:
 
         _wire.endTransmission();
     }
+	
     DS3231AlarmOne GetAlarmOne()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -446,6 +447,7 @@ public:
 
         return DS3231AlarmOne(dayOf, hour, minute, second, (DS3231AlarmOneControl)flags);
     }
+	
     DS3231AlarmTwo GetAlarmTwo()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -468,6 +470,7 @@ public:
 
         return DS3231AlarmTwo(dayOf, hour, minute, (DS3231AlarmTwoControl)flags);
     }
+	
     // Latch must be called after an alarm otherwise it will not
     // trigger again
     DS3231AlarmFlag LatchAlarmsTriggeredFlags()
@@ -496,6 +499,7 @@ public:
     {
         return getReg(DS3231_REG_AGING);
     }
+	
     void SetAgingOffset(int8_t value)
     {
         setReg(DS3231_REG_AGING, value);
@@ -516,6 +520,7 @@ private:
         uint8_t regValue = _wire.read();
         return regValue;
     }
+	
     void setReg(uint8_t regAddress, uint8_t regValue)
     {
         _wire.beginTransmission(DS3231_ADDRESS);

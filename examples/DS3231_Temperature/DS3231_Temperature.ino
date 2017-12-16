@@ -22,7 +22,11 @@ RtcDS3231<TwoWire> Rtc(Wire);
 
 void setup () 
 {
-    Serial.begin(57600);
+    Serial.begin(115200);
+    while (!Serial) delay(250);    // Wait until Arduino Serial Monitor opens
+    Serial.println( " " );         // For ESP8266, newline after bootup message
+    
+    Serial.println(F("DS3231 Misc. Temperature Tests"));
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
@@ -81,8 +85,9 @@ void setup ()
     // just clear them to your needed state
     Rtc.Enable32kHzPin(false);
     Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
-}
+} //setup
 
+// Temperature test loop
 void loop () 
 {
     if (!Rtc.IsDateTimeValid()) 
@@ -92,16 +97,15 @@ void loop ()
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    RtcDateTime now = Rtc.GetDateTime();
-    printDateTime(now);
-    Serial.println();
+    // Force a temperature A/D conversion
+    Rtc.ForceTemperatureCompensationUpdate( true );
 
-    RtcTemperature temp = Rtc.GetTemperature();
-    Serial.print(temp.AsFloat());
-    Serial.println("C");
+    // Output temperature in various formats
+    printTemps();    
 
-    delay(10000); // ten seconds
-}
+    delay(100);
+        
+} //loop
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
@@ -119,5 +123,42 @@ void printDateTime(const RtcDateTime& dt)
             dt.Minute(),
             dt.Second() );
     Serial.print(datestring);
-}
+} //printDateTime
+
+void printTemps( void )
+{
+    // Get the temperature data    
+    RtcTemperature temp = Rtc.GetTemperature();   
+
+    // Print:
+    // a) Floating point temperature
+    //    Selectively add spaces to create const. width field
+    //    ( no float formating for 'printf' type functions )
+
+    float  tf = temp.AsFloat();
+    if ( abs(tf) < 10 ) Serial.print( " " );    
+    if ( tf >= 0 )      Serial.print( " " );
+    Serial.print( tf, 2 );
+    Serial.print( "   " );
+
+    // Print:
+    // b) Whole degrees/fractional portions
+    //    formatted as a float
+    // c) Rounded integer
+    // d) Scaled integer
+    //
+    // 'snprintf' has no problems with integers
+
+    char tstr[50];
+    snprintf_P(tstr, 
+            countof(tstr),
+            PSTR("%3d.%02u  %3d   degC   Scaled:%6d" ),
+            temp.AsWholeDegrees(),       // (b)
+            temp.GetFractional(),
+            temp.AsRoundedDegrees(),     // (c)
+            temp.AsScaledDegrees()   );  // (d)
+            
+    Serial.println( tstr );
+    
+} //printTemp
 
