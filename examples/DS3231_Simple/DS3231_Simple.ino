@@ -75,6 +75,7 @@ void setup ()
     {
         Serial.println("RTC is the same as compile time! (not expected but all is fine)");
     }
+    Serial.println();
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
