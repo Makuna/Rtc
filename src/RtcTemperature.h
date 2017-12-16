@@ -13,16 +13,16 @@ public:
     {
     }
 
-//  Scaled integer temperature (x 256)
+    // Scaled integer temperature (x 256)
     int16_t AsScaledDegrees()
     {
-        return(  (mstemp << 8) + lstemp  );
+        return(  (mstemp << 8) + lstemp  );  // Concatentate raw temp. regs 
     }
 
     // Rounded integer temperature (x 1)
     int8_t AsRoundedDegrees()
     {
-        // Equivalent to:
+        // Equivalent float function:
         //   SF ( sign(x)    * floor(  abs(       x ) + 0.5    ) ) / SF, with
         // =    ( sign(SF x) * floor(  abs(    SF x ) + 0.5 SF ) ) / SF  SF = 256
         // =      sign(x)    * floor( sign(x)( SF x ) + 0.5 SF )   / SF
@@ -37,14 +37,16 @@ public:
         return ( (float)AsScaledDegrees() / 256.0f );
     }
 
-    // Deprecated, included for backwards compatibility
+    // Integer portion, temperature (x 1), useful for printing
+    // Useful for printing
     int8_t AsWholeDegrees()
     {
         int8_t  sgnT = ( (mstemp < 0) ? -1 : 1 );
         return( sgnT * ((sgnT * AsScaledDegrees()) >> 8) ); // (x 1)
     }
 
-    // Deprecated, included for backwards compatibility
+    // Fractional portion, temperature (x100), useful for printing
+    // Returns (0, 25, 50, or 75)
     uint8_t GetFractional()
     {
         int8_t  sgnT = ( (mstemp < 0) ? -1 : 1 );
