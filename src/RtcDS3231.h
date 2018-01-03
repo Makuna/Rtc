@@ -323,12 +323,10 @@ public:
         _wire.endTransmission();
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
-        int8_t degrees = _wire.read();
-        // fraction is just the upper bits
-        // representing 1/4 of a degree
-        uint8_t fract = (_wire.read() >> 6) * 25;
+        int8_t  mstmp = _wire.read();  // MS byte, scaled 2's comp. temperature
+        uint8_t lstmp = _wire.read();  // LS byte, ............................
 
-        return RtcTemperature(degrees, fract);
+        return RtcTemperature( mstmp, lstmp );
     }
 
     void Enable32kHzPin(bool enable)
