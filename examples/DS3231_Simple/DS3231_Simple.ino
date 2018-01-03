@@ -23,9 +23,15 @@ RtcDS3231<TwoWire> Rtc(Wire);
 void setup () 
 {
     Serial.begin(57600);
+    while (!Serial) delay(250);    // Wait until Arduino Serial Monitor opens
+ 
+    #if defined(ESP8266)
+    Serial.println( " " );         // For ESP8266, newline after bootup message
+    #endif
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
+    Serial.print( "_" );       // Underscore to distinguish from 'printDateTime()' output
     Serial.println(__TIME__);
 
     //--------RTC SETUP ------------
@@ -41,7 +47,7 @@ void setup ()
 
     if (!Rtc.IsDateTimeValid()) 
     {
-        // Common Cuases:
+        // Common Causes:
         //    1) first time you ran and the device wasn't running yet
         //    2) the battery on the device is low or even missing
 
@@ -85,7 +91,7 @@ void loop ()
 {
     if (!Rtc.IsDateTimeValid()) 
     {
-        // Common Cuases:
+        // Common Cses:
         //    1) the battery on the device is low or even missing and the power line was disconnected
         Serial.println("RTC lost confidence in the DateTime!");
     }
