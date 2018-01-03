@@ -23,8 +23,11 @@ void setup ()
 {
     Serial.begin(57600);
     while (!Serial) delay(250);    // Wait until Arduino Serial Monitor opens
+ 
+    #if defined(ESP8266)
     Serial.println( " " );         // For ESP8266, newline after bootup message
-    
+    #endif
+
     Serial.println(F("RtcDS3231 Misc. Temperature Tests"));
 
     Serial.print("compiled: ");
