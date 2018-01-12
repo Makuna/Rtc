@@ -4,6 +4,12 @@
 // DS3231 VCC --> 3.3v or 5v
 // DS3231 GND --> GND
 
+#if defined(ESP8266)
+#include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
+#endif
+
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
@@ -18,21 +24,20 @@ RtcDS3231<SoftwareWire> Rtc(myWire);
 RtcDS3231<TwoWire> Rtc(Wire);
 /* for normal hardware wire use above */
 
+// Global used for printing
+RtcTemperature  test( 0, 0 );
 
 void setup () 
 {
     Serial.begin(57600);
     while (!Serial) delay(250);    // Wait until Arduino Serial Monitor opens
- 
-    #if defined(ESP8266)
-    Serial.println( " " );         // For ESP8266, newline after bootup message
-    #endif
 
-    Serial.println(F("RtcDS3231 Misc. Temperature Tests"));
+    Serial.println( F(" ") );
+    Serial.println(F("DS3231 Misc. Temperature Tests"));
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
-    Serial.print( "_" );       // Underscore to distinguish from 'printDateTime()' output
+    Serial.print( "_" );          // Underscore to distinguish from 'printDateTime()' output
     Serial.println(__TIME__);
 
     //--------RTC SETUP ------------
@@ -87,7 +92,22 @@ void setup ()
     // just clear them to your needed state
     Rtc.Enable32kHzPin(false);
     Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
-    
+
+    // Test RtcTemperature class methods across
+    // negative -> zero -> positive temperature boundary
+    for( float stf = -2; stf <= 2; stf += 0.25 )
+    {
+       // Find concatentated temperature regs
+       int16_t ctreg = ( 256.0f * stf );
+
+       // Split into separate regs & call constructor
+       test = RtcTemperature( (ctreg >> 8), (ctreg & 0xFF) ); 
+
+       // Show usage/results of RtcTemperature methods
+       printTemps( test );
+    }
+    Serial.println();
+     
 } //setup
 
 // Temperature test loop
@@ -100,13 +120,18 @@ void loop ()
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    // Force a temperature A/D conversion
+    // Force a temperature A/D conversion to show how its done.
+    // Temperature updates occur automatically every 64 sec in
+    // normal operation,so forcing an A/D conversion is not required.
+    
     Rtc.ForceTemperatureCompensationUpdate( true );
 
     // Output temperature in various formats
-    printTemps();    
+    test = Rtc.GetTemperature();
+    printTemps( test );    
 
-    delay(100);  // Fast enough to watch quick temperature drifts
+    // Set update delay short enough to see changes of interest
+    delay(100);   // Fast enough for part chilled with freeze spray
         
 } //loop
 
@@ -129,39 +154,55 @@ void printDateTime(const RtcDateTime& dt)
     
 } //printDateTime
 
-void printTemps( void )
+// Examples of how to use methods in class RtcTemperature
+void printTemps ( RtcTemperature& td )
 {
-    // Get the temperature data    
-    RtcTemperature temp = Rtc.GetTemperature();   
-
     // Print:
     // a) Floating point temperature
     //    Selectively add spaces to create const. width field
+    //    using 'Serial.print()' method
     //    ( no float formating for 'printf' type functions )
 
-    float  tf = temp.AsFloat();
+    float  tf = td.AsFloat();
     if ( abs(tf) < 10 ) Serial.print( " " );    
     if ( tf >= 0 )      Serial.print( " " );
     Serial.print( tf, 2 );
-    Serial.print( "   " );
+    Serial.print( " " );
 
     // Print:
-    // b) Whole degrees/fractional portions
-    //    formatted as a float
-    // c) Rounded integer
-    // d) Scaled integer
-    //
-    // 'snprintf' has no problems with integers
+    // b) Whole degrees/fractional portions formatted as a float
+    //     i) 'printf' has no problems with integers
+    //    ii) Special test needed -0.75 degC through -0.25 degC
 
-    char tstr[50];
-    snprintf_P(tstr, 
-            countof(tstr),
-            PSTR("%3d.%02u  %3d   degC   Scaled:%6d" ),
-            temp.AsWholeDegrees(),       // (b)
-            temp.GetFractional(),
-            temp.AsRoundedDegrees(),     // (c)
-            temp.AsScaledDegrees()   );  // (d)
-            
-    Serial.println( tstr );
-    
+    Serial.printf(
+       // Distinguish between:        -0.xx   or   +0.xx       
+       ( td.IsMinusSignNeeded() ? " -%1d.%02u" : "%3d.%02u" ),
+       
+       // These methods almost always used as a pair
+       td.AsWholeDegrees(),    // Returns -128 through 127
+       td.GetFractional()      // ....... 0, 25, 50, or 75
+       
+    ); //end, 'Serial.printf'
+
+    Serial.printf( "%s", " " );   // Column spaces
+  
+    // Print using printf():
+    // c) Rounded integer
+
+    Serial.printf( "%3d   degC", td.AsRoundedDegrees() );
+    Serial.printf( "%s", "    " );   // Column spaces
+
+    // Print using printf():
+    // d) Scaled integer, in
+    //     i) Decimal:     (256 x degC)
+    //    ii) Hexadecimal: DS3221 concatenated temperature
+    //                     registers, <R11H:R12H> 
+     
+    int16_t  fxptDeg = td.AsFixedPointDegrees();
+    Serial.printf( "Decimal/Hex: %5d / 0x%04X",    // 'X' - hex all caps
+                   fxptDeg, (uint16_t)fxptDeg   );
+
+    Serial.printf( "\n" ); // Newline char        
+
 } //printTemps
+
