@@ -1,14 +1,9 @@
+
 // CONNECTIONS:
 // DS3231 SDA --> SDA
 // DS3231 SCL --> SCL
 // DS3231 VCC --> 3.3v or 5v
 // DS3231 GND --> GND
-
-#if defined(ESP8266)
-#include <pgmspace.h>
-#else
-#include <avr/pgmspace.h>
-#endif
 
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
@@ -30,7 +25,7 @@ RtcTemperature  test( 0, 0 );
 void setup () 
 {
     Serial.begin(57600);
-    while (!Serial) delay(250);    // Wait until Arduino Serial Monitor opens
+    while (!Serial) delay(250);   // Wait until Arduino Serial Monitor opens
 
     Serial.println( F(" ") );
     Serial.println(F("DS3231 Misc. Temperature Tests"));
@@ -95,6 +90,8 @@ void setup ()
 
     // Test RtcTemperature class methods across
     // negative -> zero -> positive temperature boundary
+
+    Serial.println( F( "(-)->Zero->(+) Temperature Boundary Test" ) );
     for( float stf = -2; stf <= 2; stf += 0.25 )
     {
        // Find concatentated temperature regs
@@ -122,7 +119,7 @@ void loop ()
 
     // Force a temperature A/D conversion to show how its done.
     // Temperature updates occur automatically every 64 sec in
-    // normal operation,so forcing an A/D conversion is not required.
+    // normal operation, so forcing a conversion is not required.
     
     Rtc.ForceTemperatureCompensationUpdate( true );
 
@@ -184,13 +181,13 @@ void printTemps ( RtcTemperature& td )
        
     ); //end, 'Serial.printf'
 
-    Serial.printf( "%s", " " );   // Column spaces
+    Serial.printf( "%s", " " );     // Column spaces
   
     // Print using printf():
     // c) Rounded integer
 
     Serial.printf( "%3d   degC", td.AsRoundedDegrees() );
-    Serial.printf( "%s", "    " );   // Column spaces
+    Serial.printf( "%s", "    " );  // Column spaces
 
     // Print using printf():
     // d) Scaled integer, in
