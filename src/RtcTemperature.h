@@ -7,32 +7,31 @@
 class RtcTemperature
 {
 public:
-    RtcTemperature(int8_t degrees, uint8_t fraction) :
-        integerDegrees(degrees),
-        decimalFraction(fraction)
+    // Constructor
+    RtcTemperature ( int8_t ubDegC, uint8_t lbDegC )
     {
+    // a) Merge RTC registers into signed scaled temperature (x256),
+    //    then bind to RTC resolution.
+    //         |         r11h          | DP |         r12h         |
+    // Bit:     15 14 13 12 11 10  9  8   .  7  6  5  4  3  2  1  0  -1 -2
+    //           s  i  i  i  i  i  i  i   .  f  f  0  0  0  0  0  0
+    //
+    // b) Rescale to (x4) by right-shifting (6) bits
+    //         |                                         | DP |    |
+    // Bit:     15 14 13 12 11 10  9  8  7  6  5  4  3  2   .  1  0  -1 -2
+    //           s  s  s  s  s  s  s  i  i  i  i  i  i  i      f  f   0  0
+
+       scaledDegC = (int16_t)( ( (ubDegC << 8) | (lbDegC & 0xC0) ) >> 6 );
     }
 
-    float AsFloat()
+    // Float temperature (x 1)
+    float AsFloatDegC()
     {
-        float degrees = (float)integerDegrees;
-        degrees += (float)decimalFraction / ((degrees < 0) ? -100.0f : 100.0f) ;
-        return degrees;
-    }
-
-    int8_t AsWholeDegrees()
-    {
-        return integerDegrees;
-    }
-
-    uint8_t GetFractional()
-    {
-        return decimalFraction;
+        return( (float)scaledDegC / 4.0f );
     }
 
 protected:
-    int8_t integerDegrees;
-    uint8_t decimalFraction;
+    int16_t  scaledDegC;  // Scaled temperature (4 x degC)
 };
 
 #endif // __RTCTEMPERATURE_H__
