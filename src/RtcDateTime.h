@@ -104,6 +104,8 @@ public:
         _initWithSecondsFrom2000<uint64_t>(time - c_Epoch32OfOriginYear);
     }
 
+    void InitWithIso8601(const char* date);
+
 protected:
     uint8_t _yearFrom2000;
     uint8_t _month;
