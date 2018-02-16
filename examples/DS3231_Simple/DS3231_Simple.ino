@@ -94,8 +94,10 @@ void loop ()
     printDateTime(now);
     Serial.println();
 
-    RtcTemperature temp = Rtc.GetTemperature();
-    Serial.print(temp.AsFloat());
+	RtcTemperature temp = Rtc.GetTemperature();
+	temp.Print(Serial);
+	// you may also get the temperature as a float and print it
+    // Serial.print(temp.AsFloatDegC());
     Serial.println("C");
 
     delay(10000); // ten seconds

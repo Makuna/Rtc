@@ -356,6 +356,7 @@ public:
 
         setReg(DS3231_REG_STATUS, sreg);
     }
+
     void SetSquareWavePin(DS3231SquareWavePinMode pinMode)
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
@@ -418,6 +419,7 @@ public:
 
         _wire.endTransmission();
     }
+
     void SetAlarmTwo(const DS3231AlarmTwo& alarm)
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -430,6 +432,7 @@ public:
 
         _wire.endTransmission();
     }
+
     DS3231AlarmOne GetAlarmOne()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -456,6 +459,7 @@ public:
 
         return DS3231AlarmOne(dayOf, hour, minute, second, (DS3231AlarmOneControl)flags);
     }
+
     DS3231AlarmTwo GetAlarmTwo()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -478,6 +482,7 @@ public:
 
         return DS3231AlarmTwo(dayOf, hour, minute, (DS3231AlarmTwoControl)flags);
     }
+
     // Latch must be called after an alarm otherwise it will not
     // trigger again
     DS3231AlarmFlag LatchAlarmsTriggeredFlags()
@@ -506,6 +511,7 @@ public:
     {
         return getReg(DS3231_REG_AGING);
     }
+
     void SetAgingOffset(int8_t value)
     {
         setReg(DS3231_REG_AGING, value);
@@ -526,6 +532,7 @@ private:
         uint8_t regValue = _wire.read();
         return regValue;
     }
+
     void setReg(uint8_t regAddress, uint8_t regValue)
     {
         _wire.beginTransmission(DS3231_ADDRESS);
