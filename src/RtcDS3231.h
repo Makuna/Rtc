@@ -122,9 +122,9 @@ public:
 protected:
     DS3231AlarmOneControl _flags;
 
-	uint8_t _dayOf;
-	uint8_t _hour;
-	uint8_t _minute;
+    uint8_t _dayOf;
+    uint8_t _hour;
+    uint8_t _minute;
     uint8_t _second;  
 };
 
@@ -189,9 +189,9 @@ public:
 protected:
     DS3231AlarmTwoControl _flags;
 
-	uint8_t _dayOf;
-	uint8_t _hour;
-	uint8_t _minute;
+    uint8_t _dayOf;
+    uint8_t _hour;
+    uint8_t _minute;
 };
 
 
@@ -244,6 +244,7 @@ public:
         uint8_t creg = getReg(DS3231_REG_CONTROL);
         return !(creg & _BV(DS3231_EOSC));
     }
+
     void SetIsRunning(bool isRunning)
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
@@ -282,13 +283,19 @@ public:
             centuryFlag = _BV(7);
         }
 
-        _wire.write(Uint8ToBcd(dt.DayOfWeek()));
+        // RTC Hardware Day of Week is 1-7, 1 = Monday
+        // convert our Day of Week to Rtc Day of Week
+        uint8_t rtcDow = RtcDateTime::ConvertDowToRtc(dt.DayOfWeek());
+
+        _wire.write(Uint8ToBcd(rtcDow));
+
         _wire.write(Uint8ToBcd(dt.Day()));
         _wire.write(Uint8ToBcd(dt.Month()) | centuryFlag);
         _wire.write(Uint8ToBcd(year));
 
         _wire.endTransmission();
     }
+
     RtcDateTime GetDateTime()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
@@ -415,7 +422,13 @@ public:
         _wire.write(Uint8ToBcd(alarm.Minute()) | ((alarm.ControlFlags() & 0x02) << 6));
         _wire.write(Uint8ToBcd(alarm.Hour()) | ((alarm.ControlFlags() & 0x04) << 5)); // 24 hour mode only
 
-        _wire.write(Uint8ToBcd(alarm.DayOf()) | ((alarm.ControlFlags() & 0x18) << 3));
+        uint8_t rtcDow = alarm.DayOf();
+        if (alarm.ControlFlags() == DS3231AlarmOneControl_HoursMinutesSecondsDayOfWeekMatch)
+        {
+            rtcDow = RtcDateTime::ConvertDowToRtc(rtcDow);
+        }
+
+        _wire.write(Uint8ToBcd(rtcDow) | ((alarm.ControlFlags() & 0x18) << 3));
 
         _wire.endTransmission();
     }
@@ -428,7 +441,14 @@ public:
         _wire.write(Uint8ToBcd(alarm.Minute()) | ((alarm.ControlFlags() & 0x01) << 7));
         _wire.write(Uint8ToBcd(alarm.Hour()) | ((alarm.ControlFlags() & 0x02) << 6)); // 24 hour mode only
 
-        _wire.write(Uint8ToBcd(alarm.DayOf()) | ((alarm.ControlFlags() & 0x0c) << 4));
+        // convert our Day of Week to Rtc Day of Week if needed
+        uint8_t rtcDow = alarm.DayOf();
+        if (alarm.ControlFlags() == DS3231AlarmTwoControl_HoursMinutesDayOfWeekMatch)
+        {
+            rtcDow = RtcDateTime::ConvertDowToRtc(rtcDow);
+        }
+        
+        _wire.write(Uint8ToBcd(rtcDow) | ((alarm.ControlFlags() & 0x0c) << 4));
 
         _wire.endTransmission();
     }
@@ -457,6 +477,11 @@ public:
         flags |= (raw & 0xc0) >> 3;
         uint8_t dayOf = BcdToUint8(raw & 0x3f);
 
+        if (flags == DS3231AlarmOneControl_HoursMinutesSecondsDayOfWeekMatch)
+        {
+            dayOf = RtcDateTime::ConvertRtcToDow(dayOf);
+        }
+
         return DS3231AlarmOne(dayOf, hour, minute, second, (DS3231AlarmOneControl)flags);
     }
 
@@ -479,6 +504,11 @@ public:
         raw = _wire.read();
         flags |= (raw & 0xc0) >> 4;
         uint8_t dayOf = BcdToUint8(raw & 0x3f);
+
+        if (flags == DS3231AlarmTwoControl_HoursMinutesDayOfWeekMatch)
+        {
+            dayOf = RtcDateTime::ConvertRtcToDow(dayOf);
+        }
 
         return DS3231AlarmTwo(dayOf, hour, minute, (DS3231AlarmTwoControl)flags);
     }
@@ -540,6 +570,7 @@ private:
         _wire.write(regValue);
         _wire.endTransmission();
     }
+
 };
 
 #endif // __RTCDS3231_H__

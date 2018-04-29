@@ -39,11 +39,11 @@ RtcDateTime::RtcDateTime(const char* date, const char* time)
     {
     case 'J':
         if ( date[1] == 'a' )
-	        _month = 1;
-	    else if ( date[2] == 'n' )
-	        _month = 6;
-	    else
-	        _month = 7;
+            _month = 1;
+        else if ( date[2] == 'n' )
+            _month = 6;
+        else
+            _month = 7;
         break;
     case 'F':
         _month = 2;
@@ -112,43 +112,43 @@ uint64_t RtcDateTime::TotalSeconds64() const
 
 void RtcDateTime::InitWithIso8601(const char* date)
 {
-	// sample input: date = "Sat, 26 Dec 2009 12:34:56 GMT"
-	_yearFrom2000 = StringToUint8(date + 13);
-	// Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
-	switch (date[8])
-	{
-	case 'J':
-		if (date[1 + 8] == 'a')
-			_month = 1;
-		else if (date[2 + 8] == 'n')
-			_month = 6;
-		else
-			_month = 7;
-		break;
-	case 'F':
-		_month = 2;
-		break;
-	case 'A':
-		_month = date[1 + 8] == 'p' ? 4 : 8;
-		break;
-	case 'M':
-		_month = date[2 + 8] == 'r' ? 3 : 5;
-		break;
-	case 'S':
-		_month = 9;
-		break;
-	case 'O':
-		_month = 10;
-		break;
-	case 'N':
-		_month = 11;
-		break;
-	case 'D':
-		_month = 12;
-		break;
-	}
-	_dayOfMonth = StringToUint8(date + 5);
-	_hour = StringToUint8(date + 17);
-	_minute = StringToUint8(date + 20);
-	_second = StringToUint8(date + 23);
+    // sample input: date = "Sat, 26 Dec 2009 12:34:56 GMT"
+    _yearFrom2000 = StringToUint8(date + 13);
+    // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+    switch (date[8])
+    {
+    case 'J':
+        if (date[1 + 8] == 'a')
+            _month = 1;
+        else if (date[2 + 8] == 'n')
+            _month = 6;
+        else
+            _month = 7;
+        break;
+    case 'F':
+        _month = 2;
+        break;
+    case 'A':
+        _month = date[1 + 8] == 'p' ? 4 : 8;
+        break;
+    case 'M':
+        _month = date[2 + 8] == 'r' ? 3 : 5;
+        break;
+    case 'S':
+        _month = 9;
+        break;
+    case 'O':
+        _month = 10;
+        break;
+    case 'N':
+        _month = 11;
+        break;
+    case 'D':
+        _month = 12;
+        break;
+    }
+    _dayOfMonth = StringToUint8(date + 5);
+    _hour = StringToUint8(date + 17);
+    _minute = StringToUint8(date + 20);
+    _second = StringToUint8(date + 23);
 }
