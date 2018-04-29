@@ -8,6 +8,17 @@
 #include <inttypes.h>
 #endif
 
+enum DayOfWeek
+{
+    DayOfWeek_Sunday = 0,
+    DayOfWeek_Monday,
+    DayOfWeek_Tuesday,
+    DayOfWeek_Wednesday,
+    DayOfWeek_Thursday,
+    DayOfWeek_Friday,
+    DayOfWeek_Saturday,
+};
+
 const uint16_t c_OriginYear = 2000;
 const uint32_t c_Epoch32OfOriginYear = 946684800;
 extern const uint8_t c_daysInMonth[] PROGMEM;
@@ -58,6 +69,7 @@ public:
     {
         return _second;
     }
+    // 0 = Sunday, 1 = Monday, ... 6 = Saturday
     uint8_t DayOfWeek() const;
 
     // 32-bit times as seconds since 1/1/2000
@@ -105,6 +117,24 @@ public:
     }
 
     void InitWithIso8601(const char* date);
+
+    
+    // convert our Day of Week to Rtc Day of Week 
+    // RTC Hardware Day of Week is 1-7, 1 = Monday
+    static uint8_t ConvertDowToRtc(uint8_t dow)
+    {
+        if (dow == 0)
+        {
+            dow = 7;
+        }
+        return dow;
+    }
+
+    // convert Rtc Day of Week to our Day of Week
+    static uint8_t ConvertRtcToDow(uint8_t rtcDow)
+    {
+        return (rtcDow % 7);
+    }
 
 protected:
     uint8_t _yearFrom2000;

@@ -63,6 +63,7 @@ public:
         uint8_t sreg = getReg(DS1307_REG_STATUS);
         return !(sreg & _BV(DS1307_CH));
     }
+
     void SetIsRunning(bool isRunning)
     {
         uint8_t sreg = getReg(DS1307_REG_STATUS);
@@ -90,13 +91,18 @@ public:
         _wire.write(Uint8ToBcd(dt.Minute()));
         _wire.write(Uint8ToBcd(dt.Hour())); // 24 hour mode only
 
-        _wire.write(Uint8ToBcd(dt.DayOfWeek()));
+        // RTC Hardware Day of Week is 1-7, 1 = Monday
+        // convert our Day of Week to Rtc Day of Week
+        uint8_t rtcDow = RtcDateTime::ConvertDowToRtc(dt.DayOfWeek());
+
+        _wire.write(Uint8ToBcd(rtcDow)); 
         _wire.write(Uint8ToBcd(dt.Day()));
         _wire.write(Uint8ToBcd(dt.Month()));
         _wire.write(Uint8ToBcd(dt.Year() - 2000));
 
         _wire.endTransmission();
     }
+
     RtcDateTime GetDateTime()
     {
         _wire.beginTransmission(DS1307_ADDRESS);
@@ -125,6 +131,7 @@ public:
             setReg(address, value);
         }
     }
+
     uint8_t GetMemory(uint8_t memoryAddress)
     {
         uint8_t value = 0;
