@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map Task
+# Syntax Coloring Map RTC
 #######################################
 
 #######################################
@@ -11,6 +11,7 @@ DS3231AlarmTwo	KEYWORD1
 RtcDS3231	KEYWORD1
 RtcTemperature	KEYWORD1
 RtcDateTime	KEYWORD1
+DayOfWeek	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -82,3 +83,11 @@ DS1307SquareWaveOut_8kHz	LITERAL1
 DS1307SquareWaveOut_32kHz	LITERAL1
 DS1307SquareWaveOut_High	LITERAL1
 DS1307SquareWaveOut_Low	LITERAL1
+DayOfWeek_Sunday	LITERAL1
+DayOfWeek_Monday	LITERAL1
+DayOfWeek_Tuesday	LITERAL1
+DayOfWeek_Wednesday	LITERAL1
+DayOfWeek_Thursday	LITERAL1
+DayOfWeek_Friday	LITERAL1
+DayOfWeek_Saturday	LITERAL1
+
