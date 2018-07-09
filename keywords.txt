@@ -35,9 +35,10 @@ LatchAlarmsTriggeredFlags	KEYWORD2
 ForceTemperatureCompensationUpdate	KEYWORD2
 GetAgingOffset	KEYWORD2
 SetAgingOffset	KEYWORD2
-AsFloat	KEYWORD2
-AsWholeDegrees	KEYWORD2
-GetFractional	KEYWORD2
+AsFloatDegC	KEYWORD2
+AsFloatDegF	KEYWORD2
+AsCentiDegC	KEYWORD2
+Print	KEYWORD2
 Year	KEYWORD2
 Month	KEYWORD2
 Day	KEYWORD2
