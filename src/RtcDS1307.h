@@ -180,12 +180,12 @@ public:
             _wire.write(address);
             _wire.endTransmission();
 
-            _wire.requestFrom(DS1307_ADDRESS, countBytes);
+            countRead = _wire.requestFrom(DS1307_ADDRESS, countBytes);
+            countBytes = countRead;
 
             while (countBytes-- > 0)
             {
                 *pValue++ = _wire.read();
-                countRead++;
             }
         }
 

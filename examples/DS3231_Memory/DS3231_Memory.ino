@@ -9,20 +9,38 @@
 
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
+#include <RtcDS3231.h>
+#include <EepromAt24C32.h>
 
 SoftwareWire myWire(SDA, SCL);
 RtcDS1307<SoftwareWire> Rtc(myWire);
- for software wire use above */
+/* for software wire use above */
 
 /* for normal hardware wire use below */
 #include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
-RtcDS1307<TwoWire> Rtc(Wire);
+#include <RtcDS3231.h>
+#include <EepromAt24C32.h>
+
+RtcDS3231<TwoWire> Rtc(Wire);
+EepromAt24c32<TwoWire> RtcEeprom(Wire);
+
+// if you have any of the address pins on the RTC soldered together
+// then you need to provide the state of those pins, normally they
+// are connected to vcc with a reading of 1, if soldered they are 
+// grounded with a reading of 0.  The bits are in the order A2 A1 A0
+// thus the following would have the A2 soldered together
+// EepromAt24c32<TwoWire> RtcEeprom(Wire, 0b011);
+
 /* for normal hardware wire use above */
 
-
-const char data[] = "what time is it";
+// nothing longer than 32 bytes
+// rtc eeprom memory is 32 byte pages
+// writing is limited to each page, so it will wrap at page
+// boundaries. 
+// But reading is only limited by the buffer in Wire class which
+// by default is 32
+const char data[] = "What time is it in Greenwich?";
+const uint16_t stringAddr = 64; // stored on page boundary
 
 void setup () 
 {
@@ -38,7 +56,8 @@ void setup ()
     // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
     
     Rtc.Begin();
-
+    RtcEeprom.Begin();
+    
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     printDateTime(compiled);
     Serial.println();
@@ -64,13 +83,18 @@ void setup ()
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
-    Rtc.SetSquareWavePin(DS1307SquareWaveOut_Low); 
+    Rtc.Enable32kHzPin(false);
+    Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
 
 /* comment out on a second run to see that the info is stored long term */
-    // Store something in memory on the RTC
-    Rtc.SetMemory(0, 13);
-    uint8_t written = Rtc.SetMemory(13, (const uint8_t*)data, sizeof(data) - 1); // remove the null terminator strings add
-    Rtc.SetMemory(1, written);
+    // Store something in memory on the Eeprom
+
+    // store starting address of string
+    RtcEeprom.SetMemory(0, stringAddr); 
+    // store the string, nothing longer than 32 bytes due to paging
+    uint8_t written = RtcEeprom.SetMemory(stringAddr, (const uint8_t*)data, sizeof(data) - 1); // remove the null terminator strings add
+    // store the length of the string
+    RtcEeprom.SetMemory(1, written); // store the 
 /* end of comment out section */
 }
 
@@ -93,19 +117,20 @@ void loop ()
     // read data
 
     // get the offset we stored our data from address zero
-    uint8_t address = Rtc.GetMemory(0);
-    if (address != 13)
+    uint8_t address = RtcEeprom.GetMemory(0);
+    if (address != stringAddr)
     {
-        Serial.println("address didn't match");
+        Serial.print("address didn't match ");
+        Serial.println(address);
     }
-    else
+    
     {
         // get the size of the data from address 1
-        uint8_t count = Rtc.GetMemory(1);
-        uint8_t buff[20];
+        uint8_t count = RtcEeprom.GetMemory(1);
+        uint8_t buff[64];
 
         // get our data from the address with the given size
-        uint8_t gotten = Rtc.GetMemory(address, buff, count);
+        uint8_t gotten = RtcEeprom.GetMemory(address, buff, count);
 
         if (gotten != count ||
             count != sizeof(data) - 1) // remove the extra null terminator strings add
