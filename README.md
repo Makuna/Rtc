@@ -5,10 +5,6 @@ An RTC library with deep device support.
 
 [![Donate](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6AA97KE54UJR4)
 
-Now supports esp8266.
-Now supports SoftwareWire library.
-Now supports AT24C32 EEPROM which is often included on on DS3231 boards
-
 For quick questions jump on Gitter and ask away.  
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Makuna/Rtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
