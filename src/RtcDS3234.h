@@ -4,6 +4,7 @@
 #define __RTCDS3234_H__
 
 #include <Arduino.h>
+#include <SPI.h>
 
 #include "RtcDateTime.h"
 #include "RtcTemperature.h"
@@ -231,7 +232,7 @@ enum DS3234AlarmFlag
     DS3234AlarmFlag_AlarmBoth = 0x03,
 };
 
-const c_Ds3234SpiSettings SPISettings(1000000, MSBFIRST, SPI_MODE0);
+const SPISettings c_Ds3234SpiSettings(1000000, MSBFIRST, SPI_MODE1); // CPHA must be used, so mode 1 or mode 3 are valid
 
 template<class T_SPI_METHOD> class RtcDS3234
 {
@@ -246,7 +247,6 @@ public:
     {
         UnselectChip();
         pinMode(_csPin, OUTPUT);
-        _spi.begin();
     }
 
     bool IsDateTimeValid()
@@ -327,7 +327,7 @@ public:
         _spi.transfer(0); // throwing away day of week as we calculate it
 
         uint8_t dayOfMonth = BcdToUint8(_spi.transfer(0));
-        uint8_t monthRaw = __spi.transfer(0);
+        uint8_t monthRaw = _spi.transfer(0);
         uint16_t year = BcdToUint8(_spi.transfer(0)) + 2000;
 
         UnselectChip();
@@ -362,7 +362,6 @@ public:
         // For example, at +/- 25.25°C, concatenated registers <r11h:r12h> =
         // 256 * (+/- 25+(1/4)) = +/- 6464, or 1940h / E6C0h.
 
-        _spi.requestFrom(DS3234_ADDRESS, DS3234_REG_TEMP_SIZE);
         int8_t  ms = _spi.transfer(0);  // MS byte, signed temperature
         uint8_t ls = _spi.transfer(0);  // LS byte is r12h
 

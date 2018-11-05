@@ -1,27 +1,20 @@
 
+// Reference for connecting SPI see https://www.arduino.cc/en/Reference/SPI
 // CONNECTIONS:
 // DS3234 MISO --> MISO
 // DS3234 MOSI --> MOSI
 // DS3234 CLK  --> CLK (SCK)
-// DS3234 CS (SS) --> CS (pin set aside specific to the DS3234 device using SPI)
+// DS3234 CS (SS) --> 5 (pin used to select the DS3234 on the SPI)
 // DS3234 VCC --> 3.3v or 5v
 // DS3234 GND --> GND
 // SQW --->  (Pin19) Don't forget to pullup (4.7k to 10k to VCC)
 
-/* for software wire use below
-#include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
+const uint8_t DS3234_CS_PIN = 5;
+
+#include <SPI.h>
 #include <RtcDS3234.h>
 
-SoftwareWire myWire(SDA, SCL);
-RtcDS3234<SoftwareWire> Rtc(myWire);
- for software wire use above */
-
-/* for normal hardware wire use below */
-#include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS3234.h>
-RtcDS3234<TwoWire> Rtc(Wire);
-/* for normal hardware wire use above */
-
+RtcDS3234<SPIClass> Rtc(SPI, DS3234_CS_PIN);
 
 // Interrupt Pin Lookup Table
 // (copied from Arduino Docs)
@@ -55,16 +48,13 @@ void InteruptServiceRoutine()
 
 void setup () 
 {
-    Serial.begin(57600);
+    Serial.begin(115200);
+    while (!Serial);
 
     // set the interupt pin to input mode
     pinMode(RtcSquareWavePin, INPUT);
 
-    //--------RTC SETUP ------------
-    // if you are using ESP-01 then uncomment the line below to reset the pins to
-    // the available pins for SDA, SCL
-    // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
-    
+    SPI.begin();
     Rtc.Begin();
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
