@@ -54,7 +54,7 @@ void setup ()
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
-    Rtc.SetSquareWavePin(DS3234SquareWaveOut_Low); 
+    Rtc.SetSquareWavePin(DS3234SquareWavePin_ModeNone); 
 
 /* comment out on a second run to see that the info is stored long term */
     // Store something in memory on the RTC
@@ -116,11 +116,10 @@ void loop ()
         Serial.println("\"");
     }
 
-    
     delay(5000);
 }
 
-
+#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 void printDateTime(const RtcDateTime& dt)
 {
