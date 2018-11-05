@@ -6,6 +6,10 @@
 # Datatypes (KEYWORD1)
 #######################################
 
+RtcDS1307	KEYWORD1
+DS3234AlarmOne	KEYWORD1
+DS3234AlarmTwo	KEYWORD1
+RtcDS3234	KEYWORD1
 DS3231AlarmOne	KEYWORD1
 DS3231AlarmTwo	KEYWORD1
 RtcDS3231	KEYWORD1
@@ -34,8 +38,12 @@ GetAlarmOne	KEYWORD2
 GetAlarmTwo	KEYWORD2
 LatchAlarmsTriggeredFlags	KEYWORD2
 ForceTemperatureCompensationUpdate	KEYWORD2
+SetTemperatureCompensationRate	KEYWORD2
+GetTemperatureCompensationRate	KEYWORD2
 GetAgingOffset	KEYWORD2
 SetAgingOffset	KEYWORD2
+GetMemory	KEYWORD2
+SetMemory	KEYWORD2
 AsFloatDegC	KEYWORD2
 AsFloatDegF	KEYWORD2
 AsCentiDegC	KEYWORD2
@@ -85,6 +93,34 @@ DS1307SquareWaveOut_8kHz	LITERAL1
 DS1307SquareWaveOut_32kHz	LITERAL1
 DS1307SquareWaveOut_High	LITERAL1
 DS1307SquareWaveOut_Low	LITERAL1
+DS3234SquareWaveClock_1Hz	LITERAL1
+DS3234SquareWaveClock_1kHz	LITERAL1
+DS3234SquareWaveClock_4kHz	LITERAL1
+DS3234SquareWaveClock_8kHz	LITERAL1
+DS3234SquareWavePin_ModeNone	LITERAL1
+DS3234SquareWavePin_ModeBatteryBackup	LITERAL1
+DS3234SquareWavePin_ModeClock	LITERAL1
+DS3234SquareWavePin_ModeAlarmOne	LITERAL1
+DS3234SquareWavePin_ModeAlarmTwo	LITERAL1
+DS3234SquareWavePin_ModeAlarmBoth	LITERAL1
+DS3234AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch	LITERAL1
+DS3234AlarmOneControl_OncePerSecond	LITERAL1
+DS3234AlarmOneControl_SecondsMatch	LITERAL1
+DS3234AlarmOneControl_MinutesSecondsMatch	LITERAL1
+DS3234AlarmOneControl_HoursMinutesSecondsMatch	LITERAL1
+DS3234AlarmOneControl_HoursMinutesSecondsDayOfWeekMatch	LITERAL1
+DS3234AlarmTwoControl_HoursMinutesDayOfMonthMatch	LITERAL1
+DS3234AlarmTwoControl_OncePerMinute	LITERAL1
+DS3234AlarmTwoControl_MinutesMatch	LITERAL1
+DS3234AlarmTwoControl_HoursMinutesMatch	LITERAL1
+DS3234AlarmTwoControl_HoursMinutesDayOfWeekMatch	LITERAL1
+DS3234AlarmFlag_Alarm1	LITERAL1
+DS3234AlarmFlag_Alarm2	LITERAL1
+DS3234AlarmFlag_AlarmBoth	LITERAL1
+DS3234TempCompensationRate_64Seconds	LITERAL1
+DS3234TempCompensationRate_128Seconds	LITERAL1
+DS3234TempCompensationRate_256Seconds	LITERAL1
+DS3234TempCompensationRate_512Seconds	LITERAL1
 DayOfWeek_Sunday	LITERAL1
 DayOfWeek_Monday	LITERAL1
 DayOfWeek_Tuesday	LITERAL1
