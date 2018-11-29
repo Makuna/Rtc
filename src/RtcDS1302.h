@@ -17,33 +17,33 @@ const uint8_t DS1302_REG_RAM_BURST = 0xFE;
 const uint8_t DS1302_REG_RAMSTART   = 0xc0;
 const uint8_t DS1302_REG_RAMEND     = 0xfd;
 // ram read and write addresses are interleaved
-const uint8_t DS1302_REG_RAMSIZE = 31;
+const uint8_t DS1302RamSize = 31;
 
 
 // DS1302 Trickle Charge Control Register Bits
-enum DS1302_TCR_RESISTOR {
-    DS1302_TCR_RESISTOR_DISABLED = 0,
-    DS1302_TCR_RESISTOR_2KOHM = B00000001,
-    DS1302_TCR_RESISTOR_4KOHM = B00000010,
-    DS1302_TCR_RESISTOR_8KOHM = B00000011,
-    DS1302_TCR_RESISTOR_MASK  = B00000011,
+enum DS1302TcrResistor {
+    DS1302TcrResistor_Disabled = 0,
+    DS1302TcrResistor_2KOhm = B00000001,
+    DS1302TcrResistor_4KOhm = B00000010,
+    DS1302TcrResistor_8KOhm = B00000011,
+    DS1302TcrResistor_MASK  = B00000011,
 };
 
-enum DS1302_TCR_DIODES {
-    DS1302_TCR_DIODES_NONE = 0,
-    DS1302_TCR_DIODES_ONE      = B00000100,
-    DS1302_TCR_DIODES_TWO      = B00001000,
-    DS1302_TCR_DIODES_DISABLED = B00001100,
-    DS1302_TCR_DIODES_MASK     = B00001100,
+enum DS1302TcrDiodes {
+    DS1302TcrDiodes_None = 0,
+    DS1302TcrDiodes_One      = B00000100,
+    DS1302TcrDiodes_Two      = B00001000,
+    DS1302TcrDiodes_Disabled = B00001100,
+    DS1302TcrDiodes_MASK     = B00001100,
 };
 
-enum DS1302_TCR_STATUS {
-    DS1302_TCR_STATUS_ENABLED  = B10100000,
-    DS1302_TCR_STATUS_DISABLED = B01010000,
-    DS1302_TCR_STATUS_MASK     = B11110000,
+enum DS1302TcrStatus {
+    DS1302TcrStatus_Enabled  = B10100000,
+    DS1302TcrStatus_Disabled = B01010000,
+    DS1302TcrStatus_MASK     = B11110000,
 };
 
-const uint8_t DS1302_TCR_DISABLED = DS1302_TCR_STATUS_DISABLED | DS1302_TCR_DIODES_DISABLED | DS1302_TCR_RESISTOR_DISABLED;
+const uint8_t DS1302Tcr_Disabled = DS1302TcrStatus_Disabled | DS1302TcrDiodes_Disabled | DS1302TcrResistor_Disabled;
 
 // DS1302 Clock Halt Register & Bits
 const uint8_t DS1302_REG_CH = 0x80; // bit in the seconds register
@@ -114,20 +114,20 @@ public:
 
     void SetTrickleChargeSettings(uint8_t setting)
     {
-        if ((setting & DS1302_TCR_RESISTOR_MASK) == DS1302_TCR_RESISTOR_DISABLED) {
+        if ((setting & DS1302TcrResistor_MASK) == DS1302TcrResistor_Disabled) {
             // invalid resistor setting, set to disabled
-            setting = DS1302_TCR_DISABLED;
+            setting = DS1302Tcr_Disabled;
             goto apply;
         }
-        if ((setting & DS1302_TCR_DIODES_MASK) == DS1302_TCR_DIODES_DISABLED ||
-            (setting & DS1302_TCR_DIODES_MASK) == DS1302_TCR_DIODES_NONE) {
+        if ((setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_Disabled ||
+            (setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_None) {
             // invalid diode setting, set to disabled
-            setting = DS1302_TCR_DISABLED;
+            setting = DS1302Tcr_Disabled;
             goto apply;
         }
-        if ((setting & DS1302_TCR_STATUS_MASK) != DS1302_TCR_STATUS_ENABLED) {
+        if ((setting & DS1302TcrStatus_MASK) != DS1302TcrStatus_Enabled) {
             // invalid status setting, set to disabled
-            setting = DS1302_TCR_DISABLED;
+            setting = DS1302Tcr_Disabled;
             goto apply;
         }
 
@@ -208,7 +208,7 @@ public:
 
         _wire.beginTransmission(DS1302_REG_RAM_BURST);
 
-        while (countBytes > 0 && countWritten < DS1302_REG_RAMSIZE)
+        while (countBytes > 0 && countWritten < DS1302RamSize)
         {
             _wire.write(*pValue++);
             countBytes--;
@@ -226,7 +226,7 @@ public:
 
         _wire.beginTransmission(DS1302_REG_RAM_BURST | THREEWIRE_READFLAG);
 
-        while (countBytes > 0 && countRead < DS1302_REG_RAMSIZE)
+        while (countBytes > 0 && countRead < DS1302RamSize)
         {
             *pValue++ = _wire.read();
             countRead++;
