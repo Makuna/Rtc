@@ -1,5 +1,8 @@
 #pragma once
 
+//ThreeWire command Read/Write flag 
+const uint8_t THREEWIRE_READFLAG = 0x01;
+
 class ThreeWire 
 {
 public:
@@ -11,22 +14,14 @@ public:
     }
 
     void begin() {
-        // just making sure they are in a default state
-        // as required state is set when transmissions are started
-        // three wire devices have internal pull downs so they will be low
-        pinMode(_clkPin, INPUT);
-        pinMode(_ioPin, INPUT);
-        pinMode(_cePin, INPUT);
+        resetPins();
     }
 
     void end() {
-        // reset back to lowest power usage
-        pinMode(_clkPin, INPUT);
-        pinMode(_ioPin, INPUT);
-        pinMode(_cePin, INPUT);
+        resetPins();
     }
 
-    void beginTransmission() {
+    void beginTransmission(uint8_t command) {
         digitalWrite(_cePin, LOW); // default, not enabled
         pinMode(_cePin, OUTPUT);
 
@@ -37,6 +32,13 @@ public:
 
         digitalWrite(_cePin, HIGH); // start the session
         delayMicroseconds(4);           // tCC = 4us
+
+        write(command);
+
+        if (command & THREEWIRE_READFLAG) {
+            // Set IO line for input
+            pinMode(_ioPin, INPUT);
+        }
     }
 
     void endTransmission() {
@@ -63,14 +65,10 @@ public:
     uint8_t read() {
         uint8_t value = 0;
 
-        // Set IO line for input
-        pinMode(_ioPin, INPUT);
-
         for (uint8_t bit = 0; bit < 8; bit++) {
             // first bit is present on io pin, so only clock the other
             // bits
-            value <<= 1;
-            value |= digitalRead(_ioPin);
+            value |= (digitalRead(_ioPin) << bit);
         
             // Clock up, prepare for next
             digitalWrite(_clkPin, HIGH);
@@ -88,4 +86,13 @@ private:
     const uint8_t _ioPin;
     const uint8_t _clkPin;
     const uint8_t _cePin;
+
+    void resetPins() {
+        // just making sure they are in a default low power use state
+        // as required state is set when transmissions are started
+        // three wire devices have internal pull downs so they will be low
+        pinMode(_clkPin, INPUT);
+        pinMode(_ioPin, INPUT);
+        pinMode(_cePin, INPUT);
+    }
 };

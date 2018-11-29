@@ -7,8 +7,7 @@
 #include "RtcDateTime.h"
 #include "RtcUtility.h"
 
-//DS1302 Read/Write flag
-const uint8_t DS1302_REG_READFLAG = 0x01;
+
 
 //DS1302 Register Addresses
 const uint8_t DS1302_REG_TIMEDATE   = 0x80;
@@ -18,7 +17,7 @@ const uint8_t DS1302_REG_RAM_BURST = 0xFE;
 const uint8_t DS1302_REG_RAMSTART   = 0xc0;
 const uint8_t DS1302_REG_RAMEND     = 0xfd;
 // ram read and write addresses are interleaved
-const uint8_t DS1302_REG_RAMSIZE = (DS1302_REG_RAMEND - DS1302_REG_RAMSTART) / 2;
+const uint8_t DS1302_REG_RAMSIZE = 31;
 
 
 // DS1302 Trickle Charge Control Register Bits
@@ -139,8 +138,7 @@ public:
     void SetDateTime(const RtcDateTime& dt)
     {
         // set the date time
-        _wire.beginTransmission();
-        _wire.write(DS1302_REG_TIMEDATE_BURST);
+        _wire.beginTransmission(DS1302_REG_TIMEDATE_BURST);
 
         _wire.write(Uint8ToBcd(dt.Second()));
         _wire.write(Uint8ToBcd(dt.Minute()));
@@ -161,8 +159,7 @@ public:
 
     RtcDateTime GetDateTime()
     {
-        _wire.beginTransmission();
-        _wire.write(DS1302_REG_TIMEDATE_BURST | DS1302_REG_READFLAG);
+        _wire.beginTransmission(DS1302_REG_TIMEDATE_BURST | THREEWIRE_READFLAG);
 
         uint8_t second = BcdToUint8(_wire.read() & 0x7F);
         uint8_t minute = BcdToUint8(_wire.read());
@@ -209,8 +206,7 @@ public:
     {
         uint8_t countWritten = 0;
 
-        _wire.beginTransmission();
-        _wire.write(DS1302_REG_RAM_BURST);
+        _wire.beginTransmission(DS1302_REG_RAM_BURST);
 
         while (countBytes > 0 && countWritten < DS1302_REG_RAMSIZE)
         {
@@ -228,12 +224,13 @@ public:
     {
         uint8_t countRead = 0;
 
-        _wire.beginTransmission();
-        _wire.write(DS1302_REG_RAM_BURST | DS1302_REG_READFLAG);
+        _wire.beginTransmission(DS1302_REG_RAM_BURST | THREEWIRE_READFLAG);
 
         while (countBytes > 0 && countRead < DS1302_REG_RAMSIZE)
         {
             *pValue++ = _wire.read();
+            countRead++;
+            countBytes--;
         }
 
         _wire.endTransmission();
@@ -246,10 +243,8 @@ private:
 
     uint8_t getReg(uint8_t regAddress)
     {
-        regAddress |= DS1302_REG_READFLAG;
 
-        _wire.beginTransmission();
-        _wire.write(regAddress);
+        _wire.beginTransmission(regAddress | THREEWIRE_READFLAG);
         uint8_t regValue = _wire.read();
         _wire.endTransmission();
         return regValue;
@@ -257,8 +252,7 @@ private:
 
     void setReg(uint8_t regAddress, uint8_t regValue)
     {
-        _wire.beginTransmission();
-        _wire.write(regAddress);
+        _wire.beginTransmission(regAddress);
         _wire.write(regValue);
         _wire.endTransmission();
     }
