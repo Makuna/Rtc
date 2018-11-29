@@ -6,6 +6,8 @@
 # Datatypes (KEYWORD1)
 #######################################
 
+ThreeWire	KEYWORD1
+RtcDS1302	KEYWORD1
 RtcDS1307	KEYWORD1
 DS3234AlarmOne	KEYWORD1
 DS3234AlarmTwo	KEYWORD1
@@ -26,6 +28,8 @@ Begin	KEYWORD2
 IsDateTimeValid	KEYWORD2
 GetIsRunning	KEYWORD2
 SetIsRunning	KEYWORD2
+GetIsWriteProtected	KEYWORD2
+SetIsWriteProtected	KEYWORD2
 SetDateTime	KEYWORD2
 GetDateTime	KEYWORD2
 GetTemperature	KEYWORD2
@@ -44,6 +48,8 @@ GetAgingOffset	KEYWORD2
 SetAgingOffset	KEYWORD2
 GetMemory	KEYWORD2
 SetMemory	KEYWORD2
+GetTrickleChargeSettings	KEYWORD2
+SetTrickleChargeSettings	KEYWORD2
 AsFloatDegC	KEYWORD2
 AsFloatDegF	KEYWORD2
 AsCentiDegC	KEYWORD2
@@ -87,6 +93,15 @@ DS3231AlarmTwoControl_HoursMinutesDayOfWeekMatch	LITERAL1
 DS3231AlarmFlag_Alarm1	LITERAL1
 DS3231AlarmFlag_Alarm2	LITERAL1
 DS3231AlarmFlag_AlarmBoth	LITERAL1
+DS1302RamSize	LITERAL1
+DS1302Tcr_Disabled	LITERAL1
+DS1302TcrResistor_2KOhm	LITERAL1
+DS1302TcrResistor_4KOhm	LITERAL1
+DS1302TcrResistor_8KOhm	LITERAL1
+DS1302TcrDiodes_One	LITERAL1
+DS1302TcrDiodes_Two	LITERAL1
+DS1302TcrStatus_Enabled	LITERAL1
+DS1302TcrStatus_Disabled	LITERAL1
 DS1307SquareWaveOut_1Hz	LITERAL1
 DS1307SquareWaveOut_4kHz	LITERAL1
 DS1307SquareWaveOut_8kHz	LITERAL1
