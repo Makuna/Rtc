@@ -304,7 +304,7 @@ public:
         // convert our Day of Week to Rtc Day of Week
         uint8_t rtcDow = RtcDateTime::ConvertDowToRtc(dt.DayOfWeek());
 
-        _spi.write(Uint8ToBcd(rtcDow));
+        _spi.transfer(Uint8ToBcd(rtcDow));
 
         _spi.transfer(Uint8ToBcd(dt.Day()));
         _spi.transfer(Uint8ToBcd(dt.Month()) | centuryFlag);
