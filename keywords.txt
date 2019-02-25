@@ -25,6 +25,7 @@ DayOfWeek	KEYWORD1
 #######################################
 
 Begin	KEYWORD2
+LastError	KEYWORD2
 IsDateTimeValid	KEYWORD2
 GetIsRunning	KEYWORD2
 SetIsRunning	KEYWORD2

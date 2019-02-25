@@ -224,13 +224,19 @@ template<class T_WIRE_METHOD> class RtcDS3231
 {
 public:
     RtcDS3231(T_WIRE_METHOD& wire) :
-        _wire(wire)
+        _wire(wire),
+        _lastError(0)
     {
     }
 
     void Begin()
     {
         _wire.begin();
+    }
+
+    uint8_t LastError()
+    {
+        return _lastError;
     }
 
     bool IsDateTimeValid()
@@ -293,14 +299,18 @@ public:
         _wire.write(Uint8ToBcd(dt.Month()) | centuryFlag);
         _wire.write(Uint8ToBcd(year));
 
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 
     RtcDateTime GetDateTime()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_TIMEDATE);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return RtcDateTime(0);
+        }
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
         uint8_t second = BcdToUint8(_wire.read() & 0x7F);
@@ -327,7 +337,11 @@ public:
     {
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_TEMP);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return RtcTemperature(0);
+        }
 
         // Temperature is represented as a 10-bit code with a resolution
         // of 1/4th °C and is accessable as a signed 16-bit integer at
@@ -430,7 +444,7 @@ public:
 
         _wire.write(Uint8ToBcd(rtcDow) | ((alarm.ControlFlags() & 0x18) << 3));
 
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 
     void SetAlarmTwo(const DS3231AlarmTwo& alarm)
@@ -450,14 +464,18 @@ public:
         
         _wire.write(Uint8ToBcd(rtcDow) | ((alarm.ControlFlags() & 0x0c) << 4));
 
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 
     DS3231AlarmOne GetAlarmOne()
     {
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_ALARMONE);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return DS3231AlarmOne(0, 0, 0, 0, 0);
+        }
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
 
@@ -489,7 +507,11 @@ public:
     {
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_ALARMTWO);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return DS3231AlarmTwo(0, 0, 0, 0);
+        }
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
 
@@ -549,12 +571,17 @@ public:
 
 private:
     T_WIRE_METHOD& _wire;
+    uint8_t _lastError;
 
     uint8_t getReg(uint8_t regAddress)
     {
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(regAddress);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return 0;
+        }
 
         // control register
         _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
@@ -568,7 +595,7 @@ private:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(regAddress);
         _wire.write(regValue);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 
 };

@@ -8,13 +8,19 @@ template<class T_WIRE_METHOD> class EepromAt24c32
 public:
     EepromAt24c32(T_WIRE_METHOD& wire, uint8_t addressBits = 0b111) :
         _address(AT24C32_ADDRESS | (addressBits & 0b00000111)),
-        _wire(wire)
+        _wire(wire),
+        _lastError(0)
     {
     }
 
     void Begin()
     {
         _wire.begin();
+    }
+
+    uint8_t LastError()
+    {
+        return _lastError;
     }
 
     void SetMemory(uint16_t memoryAddress, uint8_t value)
@@ -52,7 +58,7 @@ public:
             countWritten++;
         }
 
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
         
         return countWritten;
     }
@@ -64,7 +70,12 @@ public:
     {
         // set address to read from
         beginTransmission(memoryAddress);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+
+        if (_lastError != 0)
+        {
+            return 0;
+        }
 
         // read the data
         uint8_t countRead = 0;
@@ -84,12 +95,12 @@ private:
     const uint8_t _address;
     
     T_WIRE_METHOD& _wire;
+    uint8_t _lastError;
     
     void beginTransmission(uint16_t memoryAddress)
     {
         _wire.beginTransmission(_address);
         _wire.write(memoryAddress >> 8);
         _wire.write(memoryAddress & 0xFf);
-       
     }
 };
