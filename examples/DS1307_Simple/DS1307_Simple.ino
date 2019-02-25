@@ -40,17 +40,27 @@ void setup ()
 
     if (!Rtc.IsDateTimeValid()) 
     {
-        // Common Cuases:
-        //    1) first time you ran and the device wasn't running yet
-        //    2) the battery on the device is low or even missing
+        if (Rtc.LastError() != 0)
+        {
+            // we have a communications error
+            // see https://www.arduino.cc/en/Reference/WireEndTransmission for 
+            // what the number means
+            Serial.print("RTC communications error = ");
+            Serial.println(Rtc.LastError());
+        }
+        else
+        {
+            // Common Cuases:
+            //    1) first time you ran and the device wasn't running yet
+            //    2) the battery on the device is low or even missing
 
-        Serial.println("RTC lost confidence in the DateTime!");
+            Serial.println("RTC lost confidence in the DateTime!");
+            // following line sets the RTC to the date & time this sketch was compiled
+            // it will also reset the valid flag internally unless the Rtc device is
+            // having an issue
 
-        // following line sets the RTC to the date & time this sketch was compiled
-        // it will also reset the valid flag internally unless the Rtc device is
-        // having an issue
-
-        Rtc.SetDateTime(compiled);
+            Rtc.SetDateTime(compiled);
+        }
     }
 
     if (!Rtc.GetIsRunning())
@@ -83,9 +93,20 @@ void loop ()
 {
     if (!Rtc.IsDateTimeValid()) 
     {
-        // Common Cuases:
-        //    1) the battery on the device is low or even missing and the power line was disconnected
-        Serial.println("RTC lost confidence in the DateTime!");
+        if (Rtc.LastError() != 0)
+        {
+            // we have a communications error
+            // see https://www.arduino.cc/en/Reference/WireEndTransmission for 
+            // what the number means
+            Serial.print("RTC communications error = ");
+            Serial.println(Rtc.LastError());
+        }
+        else
+        {
+            // Common Cuases:
+            //    1) the battery on the device is low or even missing and the power line was disconnected
+            Serial.println("RTC lost confidence in the DateTime!");
+        }
     }
 
     RtcDateTime now = Rtc.GetDateTime();

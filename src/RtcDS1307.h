@@ -44,13 +44,19 @@ template<class T_WIRE_METHOD> class RtcDS1307
 {
 public:
     RtcDS1307(T_WIRE_METHOD& wire) :
-        _wire(wire)
+        _wire(wire),
+        _lastError(0)
     {
     }
 
     void Begin()
     {
         _wire.begin();
+    }
+
+    uint8_t LastError()
+    {
+        return _lastError;
     }
 
     bool IsDateTimeValid()
@@ -100,14 +106,18 @@ public:
         _wire.write(Uint8ToBcd(dt.Month()));
         _wire.write(Uint8ToBcd(dt.Year() - 2000));
 
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 
     RtcDateTime GetDateTime()
     {
         _wire.beginTransmission(DS1307_ADDRESS);
         _wire.write(DS1307_REG_TIMEDATE);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            RtcDateTime(0);
+        }
 
         _wire.requestFrom(DS1307_ADDRESS, DS1307_REG_TIMEDATE_SIZE);
         uint8_t second = BcdToUint8(_wire.read() & 0x7F);
@@ -160,7 +170,7 @@ public:
                 countWritten++;
             }
 
-            _wire.endTransmission();
+            _lastError = _wire.endTransmission();
         }
         return countWritten;
     }
@@ -178,7 +188,11 @@ public:
 
             _wire.beginTransmission(DS1307_ADDRESS);
             _wire.write(address);
-            _wire.endTransmission();
+            _lastError = _wire.endTransmission();
+            if (_lastError != 0)
+            {
+                return 0;
+            }
 
             countRead = _wire.requestFrom(DS1307_ADDRESS, countBytes);
             countBytes = countRead;
@@ -199,12 +213,17 @@ public:
 
 private:
     T_WIRE_METHOD& _wire;
+    uint8_t _lastError;
 
     uint8_t getReg(uint8_t regAddress)
     {
         _wire.beginTransmission(DS1307_ADDRESS);
         _wire.write(regAddress);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
+        if (_lastError != 0)
+        {
+            return 0;
+        }
 
         // control register
         _wire.requestFrom(DS1307_ADDRESS, (uint8_t)1);
@@ -218,7 +237,7 @@ private:
         _wire.beginTransmission(DS1307_ADDRESS);
         _wire.write(regAddress);
         _wire.write(regValue);
-        _wire.endTransmission();
+        _lastError = _wire.endTransmission();
     }
 };
 
