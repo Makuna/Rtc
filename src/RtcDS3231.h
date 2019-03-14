@@ -474,7 +474,7 @@ public:
         _lastError = _wire.endTransmission();
         if (_lastError != 0)
         {
-            return DS3231AlarmOne(0, 0, 0, 0, 0);
+            return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
         }
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
@@ -510,7 +510,7 @@ public:
         _lastError = _wire.endTransmission();
         if (_lastError != 0)
         {
-            return DS3231AlarmTwo(0, 0, 0, 0);
+            return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
         }
 
         _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
