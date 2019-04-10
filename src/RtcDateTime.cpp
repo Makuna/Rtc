@@ -32,7 +32,7 @@ uint8_t StringToUint8(const char* pString)
 
 RtcDateTime::RtcDateTime(const char* date, const char* time)
 {
-    // sample input: date = "Dec 26 2009", time = "12:34:56"
+    // sample input: date = "Dec 06 2009", time = "12:34:56"
     _yearFrom2000 = StringToUint8(date + 9);
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
     switch (date[0])
@@ -112,7 +112,7 @@ uint64_t RtcDateTime::TotalSeconds64() const
 
 void RtcDateTime::InitWithIso8601(const char* date)
 {
-    // sample input: date = "Sat, 26 Dec 2009 12:34:56 GMT"
+    // sample input: date = "Sat, 06 Dec 2009 12:34:56 GMT"
     _yearFrom2000 = StringToUint8(date + 13);
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
     switch (date[8])
