@@ -45,6 +45,19 @@ public:
     // RtcDateTime compileDateTime(__DATE__, __TIME__);
     RtcDateTime(const char* date, const char* time);
 
+    bool IsValid() const
+    {
+        // this just tests the most basic validity of the value ranges
+        // and not if the specific date / time is present within that scope of time
+        // It does not check leap years, leap seconds, nor any archaic daylight 
+        // savings time
+        return ((_month > 0 && _month < 13) &&
+            (_dayOfMonth > 0 && _dayOfMonth < 32) &&
+            (_hour < 24) &&
+            (_minute < 60) &&
+            (_second < 60));
+    }
+
     uint16_t Year() const
     {
         return c_OriginYear + _yearFrom2000;
