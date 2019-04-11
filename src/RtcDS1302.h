@@ -86,6 +86,11 @@ public:
         setReg(DS1302_REG_WP, wp);
     }
 
+    bool IsDateTimeValid()
+    {
+        return GetDateTime().IsValid();
+    }
+
     bool GetIsRunning()
     {
         uint8_t ch = getReg(DS1302_REG_CH);

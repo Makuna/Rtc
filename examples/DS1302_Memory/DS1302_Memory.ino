@@ -30,6 +30,12 @@ void setup ()
     printDateTime(compiled);
     Serial.println();
 
+    if (!Rtc.IsDateTimeValid()) 
+    {
+        Serial.println("RTC lost confidence in the DateTime!");
+        Rtc.SetDateTime(compiled);
+    }
+
     if (Rtc.GetIsWriteProtected())
     {
         Serial.println("RTC was write protected, enabling writing now");
@@ -71,6 +77,13 @@ void loop ()
 
     printDateTime(now);
     Serial.println(" +");
+
+    if (!now.IsValid())
+    {
+        // Common Causes:
+        //    1) the battery on the device is low or even missing and the power line was disconnected
+        Serial.println("RTC lost confidence in the DateTime!");
+    }
 
     delay(5000);
 

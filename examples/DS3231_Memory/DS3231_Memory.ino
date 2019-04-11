@@ -123,7 +123,7 @@ void loop ()
         }
         else
         {
-            // Common Cuases:
+            // Common Causes:
             //    1) the battery on the device is low or even missing and the power line was disconnected
             Serial.println("RTC lost confidence in the DateTime!");
         }

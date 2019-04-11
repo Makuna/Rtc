@@ -51,7 +51,7 @@ void setup ()
         }
         else
         {
-            // Common Cuases:
+            // Common Causes:
             //    1) first time you ran and the device wasn't running yet
             //    2) the battery on the device is low or even missing
 
@@ -106,7 +106,7 @@ void loop ()
         }
         else
         {
-            // Common Cuases:
+            // Common Causes:
             //    1) the battery on the device is low or even missing and the power line was disconnected
             Serial.println("RTC lost confidence in the DateTime!");
         }
