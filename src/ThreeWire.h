@@ -33,12 +33,7 @@ public:
         digitalWrite(_cePin, HIGH); // start the session
         delayMicroseconds(4);           // tCC = 4us
 
-        write(command);
-
-        if (command & THREEWIRE_READFLAG) {
-            // Set IO line for input
-            pinMode(_ioPin, INPUT);
-        }
+        write(command, (command & THREEWIRE_READFLAG) == THREEWIRE_READFLAG);
     }
 
     void endTransmission() {
@@ -46,7 +41,7 @@ public:
         delayMicroseconds(4);           // tCWH = 4us
     }
 
-    void write(uint8_t value) {
+    void write(uint8_t value, bool isDataRequestCommand = false) {
         for (uint8_t bit = 0; bit < 8; bit++) {
             digitalWrite(_ioPin, value & 0x01);
             delayMicroseconds(1);     // tDC = 200ns
@@ -54,6 +49,12 @@ public:
             // clock up, data is read by DS1302
             digitalWrite(_clkPin, HIGH);
             delayMicroseconds(1);     // tCH = 1000ns, tCDH = 800ns
+
+            // for the last bit before a read
+            // Set IO line for input before the clock down
+            if (bit == 7 && isDataRequestCommand) {
+                pinMode(_ioPin, INPUT);
+            }
 
             digitalWrite(_clkPin, LOW);
             delayMicroseconds(1);     // tCL=1000ns, tCDD=800ns
