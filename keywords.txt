@@ -75,7 +75,6 @@ DS3231SquareWaveClock_1kHz	LITERAL1
 DS3231SquareWaveClock_4kHz	LITERAL1
 DS3231SquareWaveClock_8kHz	LITERAL1
 DS3231SquareWavePin_ModeNone	LITERAL1
-DS3231SquareWavePin_ModeBatteryBackup	LITERAL1
 DS3231SquareWavePin_ModeClock	LITERAL1
 DS3231SquareWavePin_ModeAlarmOne	LITERAL1
 DS3231SquareWavePin_ModeAlarmTwo	LITERAL1

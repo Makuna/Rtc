@@ -206,11 +206,11 @@ enum DS3231SquareWaveClock
 enum DS3231SquareWavePinMode
 {
     DS3231SquareWavePin_ModeNone,
-    DS3231SquareWavePin_ModeBatteryBackup,
-    DS3231SquareWavePin_ModeClock,
     DS3231SquareWavePin_ModeAlarmOne,
     DS3231SquareWavePin_ModeAlarmTwo,
-    DS3231SquareWavePin_ModeAlarmBoth
+    // note:  the same as DS3231SquareWavePin_ModeAlarmOne | DS3231SquareWavePin_ModeAlarmTwo
+    DS3231SquareWavePin_ModeAlarmBoth, 
+    DS3231SquareWavePin_ModeClock
 };
 
 enum DS3231AlarmFlag
@@ -378,41 +378,37 @@ public:
         setReg(DS3231_REG_STATUS, sreg);
     }
 
-    void SetSquareWavePin(DS3231SquareWavePinMode pinMode)
+    void SetSquareWavePin(DS3231SquareWavePinMode pinMode, bool enableWhileInBatteryBackup = true)
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
 
         // clear all relevant bits to a known "off" state
         creg &= ~(DS3231_AIEMASK | _BV(DS3231_BBSQW));
-        creg |= _BV(DS3231_INTCN);  // set INTCN to disables SQW
+        creg |= _BV(DS3231_INTCN);  // set INTCN to disables clock SQW
 
-        switch (pinMode)
+        if (pinMode != DS3231SquareWavePin_ModeNone)
         {
-        case DS3231SquareWavePin_ModeNone:
-            break;
+            if (pinMode == DS3231SquareWavePin_ModeClock)
+            {
+                creg &= ~_BV(DS3231_INTCN); // clear INTCN to enable clock SQW 
+            }
+            else
+            {
+                if (pinMode & DS3231SquareWavePin_ModeAlarmOne)
+                {
+                    creg |= _BV(DS3231_A1IE);
+                }
+                if (pinMode & DS3231SquareWavePin_ModeAlarmTwo)
+                {
+                    creg |= _BV(DS3231_A2IE);
+                }
+            }
 
-        case DS3231SquareWavePin_ModeBatteryBackup:
-            creg |= _BV(DS3231_BBSQW); // set battery backup flag
-            creg &= ~_BV(DS3231_INTCN); // clear INTCN to enable SQW 
-            break;
-
-        case DS3231SquareWavePin_ModeClock:
-            creg &= ~_BV(DS3231_INTCN); // clear INTCN to enable SQW 
-            break;
-
-        case DS3231SquareWavePin_ModeAlarmOne:
-            creg |= _BV(DS3231_A1IE);
-            break;
-
-        case DS3231SquareWavePin_ModeAlarmTwo:
-            creg |= _BV(DS3231_A2IE);
-            break;
-
-        case DS3231SquareWavePin_ModeAlarmBoth:
-            creg |= _BV(DS3231_A1IE) | _BV(DS3231_A2IE);
-            break;
+            if (enableWhileInBatteryBackup)
+            {
+                creg |= _BV(DS3231_BBSQW); // set enable int/sqw while in battery backup flag
+            }
         }
-
         setReg(DS3231_REG_CONTROL, creg);
     }
 
