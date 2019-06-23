@@ -74,10 +74,15 @@ public:
     // 0 = Sunday, 1 = Monday, ... 6 = Saturday
     uint8_t DayOfWeek() const;
 
-    // 32-bit times as seconds since 1/1/2000
-    uint32_t TotalSeconds() const;
-    uint64_t TotalSeconds64() const;
+    // 32-bit time; as seconds since 1/1/2000
+	uint32_t TotalSeconds() const;
 
+	// 64-bit time; as seconds since 1/1/2000
+	uint64_t TotalSeconds64() const;
+
+	// total days since 1/1/2000
+	uint16_t TotalDays() const;
+	
     // add seconds
     void operator += (uint32_t seconds)
     {

@@ -147,16 +147,24 @@ uint8_t RtcDateTime::DayOfWeek() const
     return (days + 6) % 7; // Jan 1, 2000 is a Saturday, i.e. returns 6
 }
 
+// 32-bit time; as seconds since 1/1/2000
 uint32_t RtcDateTime::TotalSeconds() const
 {
-    uint16_t days = DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
-    return SecondsIn<uint32_t>(days, _hour, _minute, _second);
+	uint16_t days = DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
+	return SecondsIn<uint32_t>(days, _hour, _minute, _second);
 }
 
+// 64-bit time; as seconds since 1/1/2000
 uint64_t RtcDateTime::TotalSeconds64() const
 {
-    uint32_t days = DaysSinceFirstOfYear2000<uint32_t>(_yearFrom2000, _month, _dayOfMonth);
-    return SecondsIn<uint64_t>(days, _hour, _minute, _second);
+	uint32_t days = DaysSinceFirstOfYear2000<uint32_t>(_yearFrom2000, _month, _dayOfMonth);
+	return SecondsIn<uint64_t>(days, _hour, _minute, _second);
+}
+
+// total days since 1/1/2000
+uint16_t RtcDateTime::TotalDays() const
+{
+	return DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
 }
 
 void RtcDateTime::InitWithIso8601(const char* date)
