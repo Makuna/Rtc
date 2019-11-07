@@ -39,7 +39,7 @@ RtcDS3234<SPIClass> Rtc(SPI, DS3234_CS_PIN);
 volatile uint16_t interuptCount = 0;
 volatile bool interuptFlag = false;
 
-void InteruptServiceRoutine()
+void ISR_ATTR InteruptServiceRoutine()
 {
     // since this interupted any other running code,
     // don't do anything that takes long and especially avoid
