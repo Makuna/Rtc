@@ -10,7 +10,7 @@
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
-#include <EepromAt24C32.h>
+#include <EepromAT24C32.h>
 
 SoftwareWire myWire(SDA, SCL);
 RtcDS1307<SoftwareWire> Rtc(myWire);
@@ -19,7 +19,7 @@ RtcDS1307<SoftwareWire> Rtc(myWire);
 /* for normal hardware wire use below */
 #include <Wire.h> // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
-#include <EepromAt24C32.h>
+#include <EepromAT24C32.h>
 
 RtcDS3231<TwoWire> Rtc(Wire);
 EepromAt24c32<TwoWire> RtcEeprom(Wire);
