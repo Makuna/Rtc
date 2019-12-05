@@ -43,6 +43,9 @@ public:
     // 
     // xxxppppp pppaaaaa => p = page #, a = address within the page
     //
+    // NOTE: hardware WIRE libraries often have a limit of a 32 byte send buffer.  The 
+    // effect of this is that only 30 bytes can be sent, 2 bytes for the address to write to,
+    // and then 30 bytes of the actual data. 
     uint8_t SetMemory(uint16_t memoryAddress, const uint8_t* pValue, uint8_t countBytes)
     {
         uint8_t countWritten = 0;
@@ -63,9 +66,12 @@ public:
         return countWritten;
     }
 
-    // reading data doea not wrap within pages, but due to only using
+    // reading data does not wrap within pages, but due to only using
     // 12 (32K) or 13 (64K) bits are used, they will wrap within the memory limits
     // of the installed EEPROM
+    //
+    // NOTE: hardware WIRE libraries may have a limit of a 32 byte recieve buffer.  The 
+    // effect of this is that only 32 bytes can be read at one time.
     uint8_t GetMemory(uint16_t memoryAddress, uint8_t* pValue, uint8_t countBytes)
     {
         // set address to read from
