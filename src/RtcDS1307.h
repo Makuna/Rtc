@@ -53,6 +53,10 @@ public:
     {
         _wire.begin();
     }
+    void Begin(int sda, int scl)
+    {
+        _wire.begin(sda, scl);
+    }
 
     uint8_t LastError()
     {
