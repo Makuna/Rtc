@@ -63,6 +63,8 @@ Minute	KEYWORD2
 Second	KEYWORD2
 DayOfWeek	KEYWORD2
 TotalSeconds	KEYWORD2
+TotalSeconds64	KEYWORD2
+TotalDays	KEYWORD2
 DayOf	KEYWORD2
 ControlFlags	KEYWORD2
 
