@@ -247,13 +247,13 @@ public:
     bool IsDateTimeValid()
     {
         uint8_t status = getReg(DS3231_REG_STATUS);
-        return !(status & _BV(DS3231_OSF));
+        return (!(status & _BV(DS3231_OSF)) && (_lastError == 0));
     }
 
     bool GetIsRunning()
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
-        return !(creg & _BV(DS3231_EOSC));
+        return (!(creg & _BV(DS3231_EOSC)) && (_lastError == 0));
     }
 
     void SetIsRunning(bool isRunning)
@@ -317,7 +317,13 @@ public:
             return RtcDateTime(0);
         }
 
-        _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
+        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
+        if (DS3231_REG_TIMEDATE_SIZE != bytesRead)
+        {
+            _lastError = 4;
+            return RtcDateTime(0);
+        }
+
         uint8_t second = BcdToUint8(_wire.read() & 0x7F);
         uint8_t minute = BcdToUint8(_wire.read());
         uint8_t hour = BcdToBin24Hour(_wire.read());
@@ -362,7 +368,13 @@ public:
         // For example, at +/- 25.25°C, concatenated registers <r11h:r12h> =
         // 256 * (+/- 25+(1/4)) = +/- 6464, or 1940h / E6C0h.
 
-        _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
+        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
+        if (DS3231_REG_TEMP_SIZE != bytesRead)
+        {
+            _lastError = 4;
+            return RtcTemperature(0);
+        }
+
         int8_t  r11h = _wire.read();                  // MS byte, signed temperature
         return RtcTemperature( r11h, _wire.read() );  // LS byte is r12h
     }
@@ -478,7 +490,12 @@ public:
             return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
         }
 
-        _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
+        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
+        if (DS3231_REG_ALARMONE_SIZE != bytesRead)
+        {
+            _lastError = 4;
+            return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
+        }
 
         uint8_t raw = _wire.read();
         uint8_t flags = (raw & 0x80) >> 7;
@@ -514,7 +531,12 @@ public:
             return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
         }
 
-        _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
+        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
+        if (DS3231_REG_ALARMTWO_SIZE != bytesRead)
+        {
+            _lastError = 4;
+            return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
+        }
 
         uint8_t raw = _wire.read();
         uint8_t flags = (raw & 0x80) >> 7;
@@ -585,7 +607,12 @@ private:
         }
 
         // control register
-        _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
+        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
+        if (1 != bytesRead)
+        {
+            _lastError = 4;
+            return 0;
+        }
 
         uint8_t regValue = _wire.read();
         return regValue;
