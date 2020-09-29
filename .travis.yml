@@ -1,0 +1,42 @@
+# Continuous Integration (CI) is the practice, in software
+# engineering, of merging all developer working copies with a shared mainline
+# several times a day < https://docs.platformio.org/page/ci/index.html >
+#
+# Documentation:
+#
+# * Travis CI Embedded Builds with PlatformIO
+#   < https://docs.travis-ci.com/user/integration/platformio/ >
+#
+# * PlatformIO integration with Travis CI
+#   < https://docs.platformio.org/page/ci/travis.html >
+#
+# * User Guide for `platformio ci` command
+#   < https://docs.platformio.org/page/userguide/cmd_ci.html >
+#
+#
+# Please choose one of the following templates (proposed below) and uncomment
+# it (remove "# " before each line) or use own configuration according to the
+# Travis CI documentation (see above).
+#
+
+language: python
+python:
+  - "2.7"
+
+# Cache PlatformIO packages using Travis CI container-based infrastructure
+sudo: false
+cache:
+  directories:
+    - "~/.platformio"
+    - $HOME/.cache/pip
+
+env:
+  - PLATFORMIO_CI_SRC=examples/DS1302_Simple/DS1302_Simple.ino
+  - PLATFORMIO_CI_SRC=examples/DS3231_Simple/DS3231_Simple.ino
+
+install:
+  - pip install -U platformio pip setuptools
+  - platformio update
+
+script:
+  - platformio ci --lib="." --board=uno --board=esp-wrover-kit
