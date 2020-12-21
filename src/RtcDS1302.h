@@ -6,6 +6,7 @@
 #include <Arduino.h>
 #include "RtcDateTime.h"
 #include "RtcUtility.h"
+#include "ThreeWire.h"
 
 
 
