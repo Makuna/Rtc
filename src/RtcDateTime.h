@@ -26,7 +26,7 @@ extern const uint8_t c_daysInMonth[] PROGMEM;
 class RtcDateTime
 {
 public:
-    RtcDateTime(uint32_t secondsFrom2000 = 0);
+    explicit RtcDateTime(uint32_t secondsFrom2000 = 0);
     RtcDateTime(uint16_t year,
         uint8_t month,
         uint8_t dayOfMonth,
