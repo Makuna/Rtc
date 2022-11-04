@@ -568,6 +568,33 @@ public:
         setReg(DS3231_REG_STATUS, sreg);
         return (DS3231AlarmFlag)alarmFlags;
     }
+  
+    DS3231AlarmFlag LatchAlarmOneFlags()
+    {
+        uint8_t sreg = getReg(DS3231_REG_STATUS);
+        uint8_t alarmFlags = (sreg & _BV(DS3231_A1F));
+        sreg &= ~_BV(DS3231_A1F); // clear alarm flag 1
+        setReg(DS3231_REG_STATUS, sreg);
+        return (DS3231AlarmFlag)alarmFlags;
+    }
+    DS3231AlarmFlag LatchAlarmTwoFlags()
+    {
+        uint8_t sreg = getReg(DS3231_REG_STATUS);
+        uint8_t alarmFlags = (sreg & _BV(DS3231_A2F));
+        sreg &= ~_BV(DS3231_A2F); // clear alarm flag 2
+        setReg(DS3231_REG_STATUS, sreg);
+        return (DS3231AlarmFlag)alarmFlags;
+    }
+    bool GetAlarmOneTriggered()
+    {
+        uint8_t sreg = getReg(DS3231_REG_STATUS);
+        return (sreg & _BV(DS3231_A1F));
+    }
+    bool GetAlarmTwoTriggered()
+    {
+        uint8_t sreg = getReg(DS3231_REG_STATUS);
+        return (sreg & _BV(DS3231_A2F));
+    }
 
     void ForceTemperatureCompensationUpdate(bool block)
     {
