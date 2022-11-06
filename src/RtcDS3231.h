@@ -569,7 +569,7 @@ public:
         return (DS3231AlarmFlag)alarmFlags;
     }
   
-        DS3231AlarmFlag LatchAlarmOneFlag()
+    DS3231AlarmFlag LatchAlarmOneFlag()
     {
         uint8_t sreg = getReg(DS3231_REG_STATUS);
         uint8_t alarmFlags = (sreg & _BV(DS3231_A1F));
