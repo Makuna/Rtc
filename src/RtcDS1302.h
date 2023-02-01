@@ -21,7 +21,8 @@ const uint8_t DS1302RamSize = 31;
 
 
 // DS1302 Trickle Charge Control Register Bits
-enum DS1302TcrResistor {
+enum DS1302TcrResistor 
+{
     DS1302TcrResistor_Disabled = 0,
     DS1302TcrResistor_2KOhm = B00000001,
     DS1302TcrResistor_4KOhm = B00000010,
@@ -29,7 +30,8 @@ enum DS1302TcrResistor {
     DS1302TcrResistor_MASK  = B00000011,
 };
 
-enum DS1302TcrDiodes {
+enum DS1302TcrDiodes 
+{
     DS1302TcrDiodes_None = 0,
     DS1302TcrDiodes_One      = B00000100,
     DS1302TcrDiodes_Two      = B00001000,
@@ -37,7 +39,8 @@ enum DS1302TcrDiodes {
     DS1302TcrDiodes_MASK     = B00001100,
 };
 
-enum DS1302TcrStatus {
+enum DS1302TcrStatus 
+{
     DS1302TcrStatus_Enabled  = B10100000,
     DS1302TcrStatus_Disabled = B01010000,
     DS1302TcrStatus_MASK     = B11110000,
@@ -125,24 +128,23 @@ public:
 
     void SetTrickleChargeSettings(uint8_t setting)
     {
-        if ((setting & DS1302TcrResistor_MASK) == DS1302TcrResistor_Disabled) {
+        if ((setting & DS1302TcrResistor_MASK) == DS1302TcrResistor_Disabled) 
+        {
             // invalid resistor setting, set to disabled
             setting = DS1302Tcr_Disabled;
-            goto apply;
         }
-        if ((setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_Disabled ||
-            (setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_None) {
+        else if ((setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_Disabled ||
+            (setting & DS1302TcrDiodes_MASK) == DS1302TcrDiodes_None) 
+        {
             // invalid diode setting, set to disabled
             setting = DS1302Tcr_Disabled;
-            goto apply;
         }
-        if ((setting & DS1302TcrStatus_MASK) != DS1302TcrStatus_Enabled) {
+        else if ((setting & DS1302TcrStatus_MASK) != DS1302TcrStatus_Enabled) 
+        {
             // invalid status setting, set to disabled
             setting = DS1302Tcr_Disabled;
-            goto apply;
         }
 
-     apply:
         setReg(DS1302_REG_TCR, setting);
     }
 
@@ -254,7 +256,6 @@ private:
 
     uint8_t getReg(uint8_t regAddress)
     {
-
         _wire.beginTransmission(regAddress | THREEWIRE_READFLAG);
         uint8_t regValue = _wire.read();
         _wire.endTransmission();

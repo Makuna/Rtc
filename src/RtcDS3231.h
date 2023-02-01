@@ -25,11 +25,11 @@ const uint8_t DS3231_REG_AGING     = 0x10;
 const uint8_t DS3231_REG_TEMP      = 0x11;
 
 //DS3231 Register Data Size if not just 1
-const uint8_t DS3231_REG_TIMEDATE_SIZE = 7;
-const uint8_t DS3231_REG_ALARMONE_SIZE = 4;
-const uint8_t DS3231_REG_ALARMTWO_SIZE = 3;
+const size_t DS3231_REG_TIMEDATE_SIZE = 7;
+const size_t DS3231_REG_ALARMONE_SIZE = 4;
+const size_t DS3231_REG_ALARMTWO_SIZE = 3;
 
-const uint8_t DS3231_REG_TEMP_SIZE = 2;
+const size_t DS3231_REG_TEMP_SIZE = 2;
 
 // DS3231 Control Register Bits
 const uint8_t DS3231_A1IE  = 0;
@@ -317,7 +317,7 @@ public:
             return RtcDateTime(0);
         }
 
-        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
+        size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
         if (DS3231_REG_TIMEDATE_SIZE != bytesRead)
         {
             _lastError = 4;
@@ -368,7 +368,7 @@ public:
         // For example, at +/- 25.25°C, concatenated registers <r11h:r12h> =
         // 256 * (+/- 25+(1/4)) = +/- 6464, or 1940h / E6C0h.
 
-        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
+        size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
         if (DS3231_REG_TEMP_SIZE != bytesRead)
         {
             _lastError = 4;
@@ -490,7 +490,7 @@ public:
             return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
         }
 
-        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
+        size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
         if (DS3231_REG_ALARMONE_SIZE != bytesRead)
         {
             _lastError = 4;
@@ -531,7 +531,7 @@ public:
             return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
         }
 
-        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
+        size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
         if (DS3231_REG_ALARMTWO_SIZE != bytesRead)
         {
             _lastError = 4;
@@ -637,7 +637,7 @@ private:
         }
 
         // control register
-        uint8_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
+        size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
         if (1 != bytesRead)
         {
             _lastError = 4;

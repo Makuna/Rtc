@@ -19,10 +19,28 @@ RtcDS3231<SoftwareWire> Rtc(myWire);
 RtcDS3231<TwoWire> Rtc(Wire);
 /* for normal hardware wire use above */
 
+// handy routine to return true if there was an error
+// but it will also print out an error message with the given topic
+bool wasError(const char* errorTopic = "")
+{
+    uint8_t error = Rtc.LastError();
+    if (error != 0)
+    {
+        // we have a communications error
+        // see https://www.arduino.cc/reference/en/language/functions/communication/wire/endtransmission/
+        // for what the number means
+        Serial.print("[");
+        Serial.print(errorTopic);
+        Serial.print("] WIRE communications error = ");
+        Serial.println(error);
+        return true;
+    }
+    return false;
+}
 
 void setup () 
 {
-    Serial.begin(57600);
+    Serial.begin(115200);
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
@@ -34,6 +52,9 @@ void setup ()
     // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
     
     Rtc.Begin();
+#if defined(WIRE_HAS_TIMEOUT)
+    Wire.setWireTimeout(3000 /* us */, true /* reset_on_timeout */);
+#endif
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     printDateTime(compiled);
@@ -41,40 +62,59 @@ void setup ()
 
     if (!Rtc.IsDateTimeValid()) 
     {
-        Serial.println("RTC lost confidence in the DateTime!");
-        Rtc.SetDateTime(compiled);
+        if (!wasError("setup IsDateTimeValid"))
+        {
+            Serial.println("RTC lost confidence in the DateTime!");
+            Rtc.SetDateTime(compiled);
+        }
     }
 
     if (!Rtc.GetIsRunning())
     {
-        Serial.println("RTC was not actively running, starting now");
-        Rtc.SetIsRunning(true);
+        if (!wasError("setup GetIsRunning"))
+        {
+            Serial.println("RTC was not actively running");
+        }
+    }
+    else
+    {
+        Serial.println("RTC is actively running");
     }
 
     RtcDateTime now = Rtc.GetDateTime();
-    if (now < compiled) 
+    if (!wasError("setup GetDateTime"))
     {
-        Serial.println("RTC is older than compile time!  (Updating DateTime)");
-        Rtc.SetDateTime(compiled);
+        if (now < compiled)
+        {
+            Serial.println("RTC is older than compile time, updating DateTime");
+            Rtc.SetDateTime(compiled);
+        }
     }
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
     Rtc.Enable32kHzPin(false);
+    wasError("setup Enable32kHzPin");
     Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
+    wasError("setup SetSquareWavePin");
 }
 
 void loop () 
 {
     RtcDateTime now = Rtc.GetDateTime();
-
-    printDateTime(now);
-    Serial.println();
+    if (!wasError("loop GetDateTime"))
+    {
+        printDateTime(now);
+        Serial.println();
+    }
 
     for(;;)
     {
         Rtc.SetIsRunning(false);
-        Serial.println(">>> Rtc ready for storage <<<");
+        if (!wasError("loop SetIsRunning"))
+        {
+            Serial.println(">>> Rtc ready for storage <<<");
+        }
 
         delay(10000); // ten seconds
     }
