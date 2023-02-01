@@ -1,3 +1,28 @@
+/*-------------------------------------------------------------------------
+RTC library
+
+Written by Michael C. Miller.
+
+I invest time and resources providing this open source code,
+please support me by dontating (see https://github.com/Makuna/Rtc)
+
+-------------------------------------------------------------------------
+This file is part of the Makuna/Rtc library.
+
+Rtc is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+Rtc is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with Rtc.  If not, see
+<http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------*/
 
 #ifndef __RTCUTILITY_H__
 #define __RTCUTILITY_H__
@@ -22,6 +47,20 @@
 
 #endif // !defined(ISR_ATTR)
 
+// While WIRE has return codes, there is no standard definition of what they are
+// within any headers; they are only documented on the website here
+// https://www.arduino.cc/reference/en/language/functions/communication/wire/endtransmission/
+// So we define our own "standard" for this RTC library that match those
+//
+enum Rtc_Wire_Error
+{
+	Rtc_Wire_Error_None = 0,
+	Rtc_Wire_Error_TxBufferOverflow,
+	Rtc_Wire_Error_NoAddressableDevice,
+	Rtc_Wire_Error_UnsupportedRequest,
+	Rtc_Wire_Error_Unspecific,
+	Rtc_Wire_Error_CommunicationTimeout
+};
 
 // for some reason, the DUE board support does not define this, even though other non AVR archs do
 #ifndef _BV
