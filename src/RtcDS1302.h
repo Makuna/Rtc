@@ -93,12 +93,6 @@ public:
         _wire.begin();
     }
 
-    
-    void Begin(int sda, int scl)
-    {
-        _wire.begin(sda, scl);
-    }
-
     bool GetIsWriteProtected()
     {
         uint8_t wp = getReg(DS1302_REG_WP);
