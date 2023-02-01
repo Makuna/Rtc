@@ -64,8 +64,31 @@ bool wasError(const char* errorTopic = "")
         // for what the number means
         Serial.print("[");
         Serial.print(errorTopic);
-        Serial.print("] WIRE communications error = ");
-        Serial.println(error);
+        Serial.print("] WIRE communications error (");
+        Serial.print(error);
+        Serial.print(") : ");
+
+        switch (error)
+        {
+        case Rtc_Wire_Error_None:
+            Serial.println("(none?!)");
+            break;
+        case Rtc_Wire_Error_TxBufferOverflow:
+            Serial.println("transmit buffer overflow");
+            break;
+        case Rtc_Wire_Error_NoAddressableDevice:
+            Serial.println("no device responded");
+            break;
+        case Rtc_Wire_Error_UnsupportedRequest:
+            Serial.println("device doesn't support request");
+            break;
+        case Rtc_Wire_Error_Unspecific:
+            Serial.println("unspecified error");
+            break;
+        case Rtc_Wire_Error_CommunicationTimeout:
+            Serial.println("communications timed out");
+            break;
+        }
         return true;
     }
     return false;

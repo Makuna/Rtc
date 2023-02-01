@@ -1,4 +1,28 @@
+/*-------------------------------------------------------------------------
+RTC library
 
+Written by Michael C. Miller.
+
+I invest time and resources providing this open source code,
+please support me by dontating (see https://github.com/Makuna/Rtc)
+
+-------------------------------------------------------------------------
+This file is part of the Makuna/Rtc library.
+
+Rtc is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+Rtc is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with Rtc.  If not, see
+<http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------*/
 
 #ifndef __RTCDS3231_H__
 #define __RTCDS3231_H__
@@ -225,7 +249,7 @@ template<class T_WIRE_METHOD> class RtcDS3231
 public:
     RtcDS3231(T_WIRE_METHOD& wire) :
         _wire(wire),
-        _lastError(0)
+        _lastError(Rtc_Wire_Error_None)
     {
     }
 
@@ -247,13 +271,13 @@ public:
     bool IsDateTimeValid()
     {
         uint8_t status = getReg(DS3231_REG_STATUS);
-        return (!(status & _BV(DS3231_OSF)) && (_lastError == 0));
+        return (!(status & _BV(DS3231_OSF)) && (_lastError == Rtc_Wire_Error_None));
     }
 
     bool GetIsRunning()
     {
         uint8_t creg = getReg(DS3231_REG_CONTROL);
-        return (!(creg & _BV(DS3231_EOSC)) && (_lastError == 0));
+        return (!(creg & _BV(DS3231_EOSC)) && (_lastError == Rtc_Wire_Error_None));
     }
 
     void SetIsRunning(bool isRunning)
@@ -312,7 +336,7 @@ public:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_TIMEDATE);
         _lastError = _wire.endTransmission();
-        if (_lastError != 0)
+        if (_lastError != Rtc_Wire_Error_None)
         {
             return RtcDateTime(0);
         }
@@ -320,7 +344,7 @@ public:
         size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TIMEDATE_SIZE);
         if (DS3231_REG_TIMEDATE_SIZE != bytesRead)
         {
-            _lastError = 4;
+            _lastError = Rtc_Wire_Error_Unspecific;
             return RtcDateTime(0);
         }
 
@@ -349,7 +373,7 @@ public:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_TEMP);
         _lastError = _wire.endTransmission();
-        if (_lastError != 0)
+        if (_lastError != Rtc_Wire_Error_None)
         {
             return RtcTemperature(0);
         }
@@ -371,7 +395,7 @@ public:
         size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_TEMP_SIZE);
         if (DS3231_REG_TEMP_SIZE != bytesRead)
         {
-            _lastError = 4;
+            _lastError = Rtc_Wire_Error_Unspecific;
             return RtcTemperature(0);
         }
 
@@ -485,7 +509,7 @@ public:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_ALARMONE);
         _lastError = _wire.endTransmission();
-        if (_lastError != 0)
+        if (_lastError != Rtc_Wire_Error_None)
         {
             return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
         }
@@ -493,7 +517,7 @@ public:
         size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMONE_SIZE);
         if (DS3231_REG_ALARMONE_SIZE != bytesRead)
         {
-            _lastError = 4;
+            _lastError = Rtc_Wire_Error_Unspecific;
             return DS3231AlarmOne(0, 0, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsDayOfMonthMatch);
         }
 
@@ -526,7 +550,7 @@ public:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(DS3231_REG_ALARMTWO);
         _lastError = _wire.endTransmission();
-        if (_lastError != 0)
+        if (_lastError != Rtc_Wire_Error_None)
         {
             return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
         }
@@ -534,7 +558,7 @@ public:
         size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, DS3231_REG_ALARMTWO_SIZE);
         if (DS3231_REG_ALARMTWO_SIZE != bytesRead)
         {
-            _lastError = 4;
+            _lastError = Rtc_Wire_Error_Unspecific;
             return DS3231AlarmTwo(0, 0, 0, DS3231AlarmTwoControl_HoursMinutesDayOfMonthMatch);
         }
 
@@ -631,7 +655,7 @@ private:
         _wire.beginTransmission(DS3231_ADDRESS);
         _wire.write(regAddress);
         _lastError = _wire.endTransmission();
-        if (_lastError != 0)
+        if (_lastError != Rtc_Wire_Error_None)
         {
             return 0;
         }
@@ -640,7 +664,7 @@ private:
         size_t bytesRead = _wire.requestFrom(DS3231_ADDRESS, (uint8_t)1);
         if (1 != bytesRead)
         {
-            _lastError = 4;
+            _lastError = Rtc_Wire_Error_Unspecific;
             return 0;
         }
 
