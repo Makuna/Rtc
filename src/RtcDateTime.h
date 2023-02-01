@@ -27,6 +27,7 @@ class RtcDateTime
 {
 public:
     explicit RtcDateTime(uint32_t secondsFrom2000 = 0);
+
     RtcDateTime(uint16_t year,
         uint8_t month,
         uint8_t dayOfMonth,
@@ -90,6 +91,12 @@ public:
         *this = after;
     }
 
+    RtcDateTime operator + (uint32_t seconds) const
+    {
+        RtcDateTime after = RtcDateTime(TotalSeconds() + seconds);
+        return after;
+    }
+
     // remove seconds
     void operator -= (uint32_t seconds)
     {
@@ -97,10 +104,40 @@ public:
         *this = before;
     }
 
-    // allows for comparisons to just work (==, <, >, <=, >=, !=)
-    operator uint32_t() const
+    RtcDateTime operator - (uint32_t seconds) const
     {
-        return TotalSeconds();
+        RtcDateTime after = RtcDateTime(TotalSeconds() - seconds);
+        return after;
+    }
+
+    bool operator == (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() == right.TotalSeconds());
+    }
+
+    bool operator != (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() != right.TotalSeconds());
+    }
+
+    bool operator <= (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() <= right.TotalSeconds());
+    }
+
+    bool operator >= (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() >= right.TotalSeconds());
+    }
+
+    bool operator < (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() < right.TotalSeconds());
+    }
+
+    bool operator > (const RtcDateTime& right)
+    {
+        return (this->TotalSeconds() > right.TotalSeconds());
     }
 
     // Epoch32 support
@@ -179,7 +216,6 @@ protected:
         }
         _dayOfMonth = days + 1;
     }
-
 };
 
 #endif // __RTCDATETIME_H__

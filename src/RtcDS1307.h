@@ -19,7 +19,7 @@ const uint8_t DS1307_REG_RAMEND     = 0x3f;
 const uint8_t DS1307_REG_RAMSIZE = DS1307_REG_RAMEND - DS1307_REG_RAMSTART;
 
 //DS1307 Register Data Size if not just 1
-const uint8_t DS1307_REG_TIMEDATE_SIZE = 7;
+const size_t DS1307_REG_TIMEDATE_SIZE = 7;
 
 // DS1307 Control Register Bits
 const uint8_t DS1307_RS0   = 0;
@@ -53,6 +53,7 @@ public:
     {
         _wire.begin();
     }
+
     void Begin(int sda, int scl)
     {
         _wire.begin(sda, scl);
@@ -77,6 +78,7 @@ public:
     void SetIsRunning(bool isRunning)
     {
         uint8_t sreg = getReg(DS1307_REG_STATUS);
+
         if (isRunning)
         {
             sreg &= ~_BV(DS1307_CH);
@@ -85,6 +87,7 @@ public:
         {
             sreg |= _BV(DS1307_CH);
         }
+
         setReg(DS1307_REG_STATUS, sreg);
     }
 
@@ -123,7 +126,7 @@ public:
             RtcDateTime(0);
         }
 
-        uint8_t bytesRead = _wire.requestFrom(DS1307_ADDRESS, DS1307_REG_TIMEDATE_SIZE);
+        size_t bytesRead = _wire.requestFrom(DS1307_ADDRESS, DS1307_REG_TIMEDATE_SIZE);
         if (DS1307_REG_TIMEDATE_SIZE != bytesRead)
         {
             _lastError = 4;
@@ -185,10 +188,10 @@ public:
         return countWritten;
     }
 
-    uint8_t GetMemory(uint8_t memoryAddress, uint8_t* pValue, uint8_t countBytes)
+    size_t GetMemory(uint8_t memoryAddress, uint8_t* pValue, size_t countBytes)
     {
         uint8_t address = memoryAddress + DS1307_REG_RAMSTART;
-        uint8_t countRead = 0;
+        size_t countRead = 0;
         if (address <= DS1307_REG_RAMEND)
         {
             if (countBytes > DS1307_REG_RAMSIZE)
@@ -236,7 +239,7 @@ private:
         }
 
         // control register
-        uint8_t bytesRead = _wire.requestFrom(DS1307_ADDRESS, (uint8_t)1);
+        size_t bytesRead = _wire.requestFrom(DS1307_ADDRESS, (size_t)1);
         if (1 != bytesRead)
         {
             _lastError = 4;

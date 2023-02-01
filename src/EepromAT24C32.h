@@ -6,7 +6,7 @@ const uint8_t AT24C32_ADDRESS = 0x50; // 0b0 1010 A2 A1 A0
 template<class T_WIRE_METHOD> class EepromAt24c32
 {
 public:
-    EepromAt24c32(T_WIRE_METHOD& wire, uint8_t addressBits = 0b111) :
+    EepromAt24c32(T_WIRE_METHOD& wire, uint8_t addressBits = 0b000) :
         _address(AT24C32_ADDRESS | (addressBits & 0b00000111)),
         _wire(wire),
         _lastError(0)
@@ -16,6 +16,11 @@ public:
     void Begin()
     {
         _wire.begin();
+    }
+
+    void Begin(int sda, int scl)
+    {
+        _wire.begin(sda, scl);
     }
 
     uint8_t LastError()
