@@ -145,4 +145,11 @@ DayOfWeek_Wednesday	LITERAL1
 DayOfWeek_Thursday	LITERAL1
 DayOfWeek_Friday	LITERAL1
 DayOfWeek_Saturday	LITERAL1
+Rtc_Wire_Error	LITERAL1
+Rtc_Wire_Error_None	LITERAL1
+Rtc_Wire_Error_TxBufferOverflow	LITERAL1
+Rtc_Wire_Error_NoAddressableDevice	LITERAL1
+Rtc_Wire_Error_UnsupportedRequest	LITERAL1
+Rtc_Wire_Error_Unspecific	LITERAL1
+Rtc_Wire_Error_CommunicationTimeout	LITERAL1
 
