@@ -44,7 +44,10 @@ enum DayOfWeek
 };
 
 const uint16_t c_OriginYear = 2000;
-const uint32_t c_Epoch32OfOriginYear = 946684800;
+const uint32_t c_UnixEpoch32 = 946684800; // Unix origin year is 1970
+const uint32_t c_NtpEpoch32FromUnixEpoch32 = 2208988800; // Ntp origin year is 1900
+const uint32_t c_NtpEpoch32 = c_UnixEpoch32 + c_NtpEpoch32FromUnixEpoch32;
+
 extern const uint8_t c_daysInMonth[] PROGMEM;
 
 class RtcDateTime
@@ -165,23 +168,65 @@ public:
     }
 
     // Epoch32 support
+    [[deprecated("Use Unix32Time() instead.")]]
     uint32_t Epoch32Time() const
     {
-        return TotalSeconds() + c_Epoch32OfOriginYear;
+        return TotalSeconds() + c_UnixEpoch32;
     }
-    void InitWithEpoch32Time(uint32_t time)
+    [[deprecated("Use InitWithUnix32Time() instead.")]]
+    void InitWithEpoch32Time(uint32_t secondsSince1970)
     {
-        _initWithSecondsFrom2000<uint32_t>(time - c_Epoch32OfOriginYear);
+        _initWithSecondsFrom2000<uint32_t>(secondsSince1970 - c_UnixEpoch32);
     }
 
     // Epoch64 support
+    [[deprecated("Use Unix64Time() instead.")]]
     uint64_t Epoch64Time() const
     {
-        return TotalSeconds64() + c_Epoch32OfOriginYear;
+        return TotalSeconds64() + c_UnixEpoch32;
     }
-    void InitWithEpoch64Time(uint64_t time)
+    [[deprecated("Use InitWithUnix64Time() instead.")]]
+    void InitWithEpoch64Time(uint64_t secondsSince1970)
     {
-        _initWithSecondsFrom2000<uint64_t>(time - c_Epoch32OfOriginYear);
+        _initWithSecondsFrom2000<uint64_t>(secondsSince1970 - c_UnixEpoch32);
+    }
+
+    // Unix32 support
+    uint32_t Unix32Time() const
+    {
+        return TotalSeconds() + c_UnixEpoch32;
+    }
+    void InitWithUnix32Time(uint32_t secondsSince1900)
+    {
+        _initWithSecondsFrom2000<uint32_t>(secondsSince1900 - c_UnixEpoch32);
+    }
+    // Unix64 support
+    uint64_t Unix64Time() const
+    {
+        return TotalSeconds64() + c_UnixEpoch32;
+    }
+    void InitWithUnix64Time(uint64_t secondsSince1900)
+    {
+        _initWithSecondsFrom2000<uint64_t>(secondsSince1900 - c_UnixEpoch32);
+    }
+
+    // Ntp32 support
+    uint32_t Ntp32Time() const
+    {
+        return TotalSeconds() + c_NtpEpoch32;
+    }
+    void InitWithNtp32Time(uint32_t secondsSince1900)
+    {
+        _initWithSecondsFrom2000<uint32_t>(secondsSince1900 - c_NtpEpoch32);
+    }
+    // Ntp64 support
+    uint64_t Ntp64Time() const
+    {
+        return TotalSeconds64() + c_NtpEpoch32;
+    }
+    void InitWithNtp64Time(uint64_t secondsSince1900)
+    {
+        _initWithSecondsFrom2000<uint64_t>(secondsSince1900 - c_NtpEpoch32);
     }
 
     void InitWithIso8601(const char* date);
