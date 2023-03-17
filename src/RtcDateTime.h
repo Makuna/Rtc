@@ -196,18 +196,18 @@ public:
     {
         return TotalSeconds() + c_UnixEpoch32;
     }
-    void InitWithUnix32Time(uint32_t secondsSince1900)
+    void InitWithUnix32Time(uint32_t secondsSince1970)
     {
-        _initWithSecondsFrom2000<uint32_t>(secondsSince1900 - c_UnixEpoch32);
+        _initWithSecondsFrom2000<uint32_t>(secondsSince1970 - c_UnixEpoch32);
     }
     // Unix64 support
     uint64_t Unix64Time() const
     {
         return TotalSeconds64() + c_UnixEpoch32;
     }
-    void InitWithUnix64Time(uint64_t secondsSince1900)
+    void InitWithUnix64Time(uint64_t secondsSince1970)
     {
-        _initWithSecondsFrom2000<uint64_t>(secondsSince1900 - c_UnixEpoch32);
+        _initWithSecondsFrom2000<uint64_t>(secondsSince1970 - c_UnixEpoch32);
     }
 
     // Ntp32 support
