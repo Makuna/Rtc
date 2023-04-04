@@ -30,7 +30,7 @@ License along with Rtc.  If not, see
 #include <Arduino.h>
 #include "RtcDateTime.h"
 #include "RtcUtility.h"
-
+#include "ThreeWire.h"
 
 
 //DS1302 Register Addresses

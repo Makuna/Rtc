@@ -25,7 +25,6 @@ License along with Rtc.  If not, see
 -------------------------------------------------------------------------*/
 
 #include <Arduino.h>
-#include "ThreeWire.h"
 
 #pragma once
 
