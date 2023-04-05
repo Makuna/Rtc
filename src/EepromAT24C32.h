@@ -24,6 +24,8 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
+#include <Arduino.h>
+
 #pragma once
 
 //I2C Slave Address  
