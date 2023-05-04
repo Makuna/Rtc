@@ -24,13 +24,15 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCDATETIME_H__
-#define __RTCDATETIME_H__
+#pragma once
 
 // ESP32 complains if not included
 #if defined(ARDUINO_ARCH_ESP32)
 #include <inttypes.h>
 #endif
+
+#include "RtcTimeZone.h"
+#include "RtcLocaleEnUs.h"
 
 enum DayOfWeek
 {
@@ -50,51 +52,6 @@ const uint32_t c_NtpEpoch32 = c_UnixEpoch32 + c_NtpEpoch32FromUnixEpoch32;
 
 extern const uint8_t c_daysInMonth[] PROGMEM;
 
-class RtcLocaleEN
-{
-public:
-    static uint8_t CharsToMonth(const char* monthChars, size_t count)
-    {
-        uint8_t month = 0;
-
-        if (count >= 3)
-        {
-            switch (tolower(monthChars[0]))
-            {
-            case 'j':
-                if (tolower(monthChars[1]) == 'a')
-                    month = 1;
-                else if (tolower(monthChars[2]) == 'n')
-                    month = 6;
-                else
-                    month = 7;
-                break;
-            case 'f':
-                month = 2;
-                break;
-            case 'a':
-                month = tolower(monthChars[1]) == 'p' ? 4 : 8;
-                break;
-            case 'm':
-                month = tolower(monthChars[2]) == 'r' ? 3 : 5;
-                break;
-            case 's':
-                month = 9;
-                break;
-            case 'o':
-                month = 10;
-                break;
-            case 'n':
-                month = 11;
-                break;
-            case 'd':
-                month = 12;
-                break;
-            }
-        }
-        return month;
-    }
-};
 
 class RtcDateTime
 {
@@ -124,8 +81,8 @@ public:
     RtcDateTime(const char* date, const char* time)
     {
         // __DATE__ is always in english
-        InitWithDateTimeFormatString<RtcLocaleEN>("MMM DD YYYY", date);
-        InitWithDateTimeFormatString<RtcLocaleEN>("hh:mm:ss", time);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>("MMM DD YYYY", date);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>("hh:mm:ss", time);
     }
 
     bool IsValid() const;
@@ -294,12 +251,13 @@ public:
     void InitWithIso8601(const char* date)
     {
         // sample input: date = "Sat, 06 Dec 2009 12:34:56 GMT"
-        InitWithDateTimeFormatString<RtcLocaleEN>("*, DD MMM YYYY hh:mm:ss zzz", date);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>("*, DD MMM YYYY hh:mm:ss zzz", date);
     }
 
     //
     // https://www.w3.org/TR/NOTE-datetime
     // https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings
+    // https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations#:~:text=List%20of%20time%20zone%20abbreviations%20%20%20,%20%20UTC%2B08%3A00%20%2051%20more%20rows%20
     // 
     // * - ignore until next char
     // 
@@ -316,14 +274,24 @@ public:
     // mm - minute
     // ss - seconds
     // 
-    // z -
-    // zzz - time zone
+    // z - +hh:mm or Z - 
+    //      using this will adjust the time to time zone present in 
+    //      the string, thus providing a local time unless the string
+    //      uses the Z timezone,
+    //      without it, it will ignore the timezone and return the UTC 
+    // zzz - time zone abreviation
+    //      using this will adjust the time to UTC from the time zone
+    //      present in the string,
+    //      without it, it will ignore the timezone and return the local
     //
-    template <typename T_LOCALE> bool InitWithDateTimeFormatString(const char* format, const char* datetime)
+    // return - index last converted of datetime
+    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(const char* format, const char* datetime)
     {
         const char specifiers[] = "*YMDhmsz";
         const char* scan = format;
         const char* convert = datetime;
+        uint32_t timezoneOffset = 0;
+        bool timezonePositive = false;
 
         // while chars in format and datetime
         while (*scan != '\0' && *datetime != '\0')
@@ -342,19 +310,41 @@ public:
                     iEnd++;
                 }
                 size_t count = iEnd;
-
+                size_t countConverted = 0;
 
                 switch (scan[iStart])
                 {
                 case '*':
-                    // increment convert until matching char after *
-                    while (*convert != scan[iEnd])
                     {
-                        convert++;
+                        // increment through convert until the matching char 
+                        // from scan after the * token
+                        const char* skip = convert;
+                        while (*skip != '\0' && *skip != scan[iEnd])
+                        {
+                            skip++;
+                        }
+                        // include skipping extra matching char
+                        countConverted = skip - convert + 1;
+                        count++;
+
+                        Serial.print("*>");
+                        Serial.print(scan + count);
+                        Serial.print("<->");
+                        Serial.print(convert + countConverted);
+                        Serial.print("< ");
+                        Serial.print(count);
+                        Serial.print("-");
+                        Serial.print(countConverted);
+                        Serial.println();
                     }
                     break;
 
                 case 'Y':
+                    Serial.print("Y>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
                     if (count >= 4)
                     {
                         // only care about last three digits
@@ -363,23 +353,28 @@ public:
                         convert += offset;
                         count = 3;
                     }
-                    _yearFrom2000 = CharsToNumber<uint8_t>(convert, count);
+                    countConverted = CharsToNumber<uint8_t>(convert, &_yearFrom2000, count);
                     break;
 
                 case 'M':
+                    Serial.print("M>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
                     if (*convert >= '0' && *convert <= '9')
                     {
                         if (count > 2)
                         {
-                            return false;
+                            return convert - datetime;
                         }
-                        _month = CharsToNumber<uint8_t>(convert, count);
+                        countConverted = CharsToNumber<uint8_t>(convert, &_month, count);
                     }
                     else
                     {
                         if (count > 3)
                         {
-                            return false;
+                            return convert - datetime;
                         }
                         else if (count == 1)
                         {
@@ -389,48 +384,138 @@ public:
                             {
                                 temp++;
                             }
+
                             size_t monthCount = temp - convert;
                             if (monthCount < 3)
                             {
-                                return false;
+                                return convert - datetime;
                             }
+
                             _month = T_LOCALE::CharsToMonth(convert, monthCount);
-                            convert = temp;
+                            countConverted = monthCount;
                         }
                         else 
                         {
                             _month = T_LOCALE::CharsToMonth(convert, count);
+                            countConverted = count;
                         }
                     }
                     break;
 
                 case 'D':
-                    _dayOfMonth = CharsToNumber<uint8_t>(convert, count);
+                    Serial.print("D>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
+                    countConverted = CharsToNumber<uint8_t>(convert, &_dayOfMonth, count);
                     break;
 
                 case 'h':
-                    _hour = CharsToNumber<uint8_t>(convert, count);
+                    Serial.print("h>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
+                    countConverted = CharsToNumber<uint8_t>(convert, &_hour, count);
                     break;
 
                 case 'm':
-                    _minute = CharsToNumber<uint8_t>(convert, count);
+                    Serial.print("m>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
+                    countConverted = CharsToNumber<uint8_t>(convert, &_minute, count);
+
+                    Serial.print(_minute);
+                    Serial.println();
                     break;
 
                 case 's':
-                    _second = CharsToNumber<uint8_t>(convert, count);
+                    Serial.print("s>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
+                    countConverted = CharsToNumber<uint8_t>(convert, &_second, count);
                     break;
 
                 case 'z':
-                    // TODO: implement time zone adjustments
-                    // right now, assuming no offset
+                    Serial.print("z>");
+                    Serial.print(convert);
+                    Serial.print("< ");
+                    Serial.print(count);
+                    Serial.println();
+
+                    if (count == 1)
+                    {
+                        // +hh:mm or Z
+                        // adjusting to local time
+                        if (*convert == '+' || *convert == '-')
+                        {
+                            const char* temp = convert;
+                            uint8_t hours;
+                            uint8_t minutes;
+
+                            timezonePositive = (*temp == '+');
+                            temp++;
+                            temp += CharsToNumber<uint8_t>(temp, &hours, 2);
+                            temp++; // :
+                            temp += CharsToNumber<uint8_t>(temp, &minutes, 2);
+                            timezoneOffset = hours * 60 + minutes;
+
+                            countConverted = temp - datetime;
+                        }
+                        else if (*convert == 'Z' || *convert == 'z')
+                        {
+                            // nothing to adjust, zulu time is what we want
+                        }
+                        else
+                        {
+                            return convert - datetime;
+                        }
+                    }
+                    else
+                    {
+                        // zzz - time zone abreviation
+                        // use the locale object to search table
+                        int32_t delta = T_LOCALE::OffsetFromAbreviation(convert);
+                        timezonePositive = (delta >= 0);
+                        timezoneOffset = abs(delta);
+                    }
+
+                    countConverted = count;
                     break;
                 }
 
-                scan += count;
-                convert += count;
+                if (countConverted)
+                {
+                    scan += count;
+                    convert += countConverted;
+                }
+                else
+                {
+                    return convert - datetime;
+                }
             }
         }
-        return true;
+
+        // adjust our time by the timezone
+        //
+        if (timezoneOffset)
+        {
+            if (timezonePositive)
+            {
+                *this += timezoneOffset * 60;
+            }
+            else
+            {
+                *this -= timezoneOffset * 60;
+            }
+        }
+
+        return convert - datetime;
     }
 
     // convert our Day of Week to Rtc Day of Week 
@@ -487,28 +572,48 @@ protected:
         _dayOfMonth = days + 1;
     }
 
-    template <typename T_NUMBER> T_NUMBER CharsToNumber(const char* chars, size_t count)
+    // CharsToNumber - convert a series of chars to a number of the given type
+    // 
+    // str - the pointer to string to process
+    // result - the value converted from the string
+    // count - the number of numerals to stop processing with 
+    //         excludes leading non-numeral chars
+    // return - the number to increment str for more processing,
+    //          0 for failure
+    template <typename T_NUMBER> size_t CharsToNumber(const char* str, T_NUMBER* result, size_t count)
     {
-        T_NUMBER value = 0;
+        const char* scan = str;
+        bool converted = false;
+        size_t left = count;
+
+        *result = 0;
 
         // skip leading 0 and non numericals
-        while (count && ('0' >= *chars || '9' < *chars))
+        while (left && '\0' != *scan && ('0' >= *scan || '9' < *scan))
         {
-            count--;
-            chars++;
+            // only decrement left with numerals
+            if (left && '0' == *scan)
+            {
+                converted = true;
+                left--;
+            }
+            scan++;
         }
 
         // calculate number until we hit non-numeral char
-        while (count && '0' <= *chars && *chars <= '9')
+        while (left && '\0' != *scan && '0' <= *scan && *scan <= '9')
         {
-            value *= 10;
-            value += *chars - '0';
+            converted = true;
 
-            count--;
-            chars++;
+            *result *= 10;
+            *result += *scan - '0';
+
+            left--;
+            scan++;
         }
-        return value;
+
+        return converted ? scan - str : 0;
     }
 };
 
-#endif // __RTCDATETIME_H__
+
