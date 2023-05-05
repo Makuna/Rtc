@@ -30,9 +30,12 @@ License along with Rtc.  If not, see
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
+// due to how PROGMEM works, strings must be declared standalone
+//
 const char stringADT[] PROGMEM = "ADT";
 const char stringAKDT[] PROGMEM = "AKDT";
 const char stringAKST[] PROGMEM = "AKST";
+const char stringAST[] PROGMEM = "AST";
 const char stringCDT[] PROGMEM = "CDT";
 const char stringCST[] PROGMEM = "CST";
 const char stringEDT[] PROGMEM = "EDT";
@@ -46,11 +49,14 @@ const char stringPDT[] PROGMEM = "PDT";
 const char stringPST[] PROGMEM = "PST";
 const char stringUTC[] PROGMEM = "UTC";
 
+// collection in alphabetic order of abreviation
+//
 const RtcTimeZone c_tzEnUs[] PROGMEM =
 		{
 			{ stringADT, -3 * 60 },  // Atlantic Daylight Time
 			{ stringAKDT, -8 * 60 }, // Alaska Daylight Time
 			{ stringAKST, -9 * 60 }, // Alaska Standard Time
+            { stringAST, -4 * 60 },  // Atlantic Standard Time
 			{ stringCDT, -5 * 60 },  // Central Daylight Time
 			{ stringCST, -6 * 60 },  // Central Standard Time
 			{ stringEDT, -4 * 60 },  // Eastern Daylight Time
@@ -109,7 +115,7 @@ uint8_t RtcLocaleEnUs::CharsToMonth(const char* monthChars, size_t count)
     return month;
 }
 
-int32_t RtcLocaleEnUs::OffsetFromAbreviation(const char* abbr)
+int32_t RtcLocaleEnUs::TimeZoneMinutesFromAbreviation(const char* abbr)
 {
     size_t count = countof(c_tzEnUs);
     RtcTimeZone entry;

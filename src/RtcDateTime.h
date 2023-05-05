@@ -290,7 +290,7 @@ public:
         const char specifiers[] = "*YMDhmsz";
         const char* scan = format;
         const char* convert = datetime;
-        uint32_t timezoneOffset = 0;
+        uint32_t timezoneMinutes = 0;
         bool timezonePositive = false;
 
         // while chars in format and datetime
@@ -311,6 +311,13 @@ public:
                 }
                 size_t count = iEnd;
                 size_t countConverted = 0;
+
+                Serial.print(scan[iStart]);
+                Serial.print(">");
+                Serial.print(convert);
+                Serial.print("< ");
+                Serial.print(count);
+                Serial.println();
 
                 switch (scan[iStart])
                 {
@@ -340,11 +347,6 @@ public:
                     break;
 
                 case 'Y':
-                    Serial.print("Y>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     if (count >= 4)
                     {
                         // only care about last three digits
@@ -357,11 +359,6 @@ public:
                     break;
 
                 case 'M':
-                    Serial.print("M>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     if (*convert >= '0' && *convert <= '9')
                     {
                         if (count > 2)
@@ -403,51 +400,22 @@ public:
                     break;
 
                 case 'D':
-                    Serial.print("D>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     countConverted = CharsToNumber<uint8_t>(convert, &_dayOfMonth, count);
                     break;
 
                 case 'h':
-                    Serial.print("h>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     countConverted = CharsToNumber<uint8_t>(convert, &_hour, count);
                     break;
 
                 case 'm':
-                    Serial.print("m>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     countConverted = CharsToNumber<uint8_t>(convert, &_minute, count);
-
-                    Serial.print(_minute);
-                    Serial.println();
                     break;
 
                 case 's':
-                    Serial.print("s>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
                     countConverted = CharsToNumber<uint8_t>(convert, &_second, count);
                     break;
 
                 case 'z':
-                    Serial.print("z>");
-                    Serial.print(convert);
-                    Serial.print("< ");
-                    Serial.print(count);
-                    Serial.println();
-
                     if (count == 1)
                     {
                         // +hh:mm or Z
@@ -463,7 +431,7 @@ public:
                             temp += CharsToNumber<uint8_t>(temp, &hours, 2);
                             temp++; // :
                             temp += CharsToNumber<uint8_t>(temp, &minutes, 2);
-                            timezoneOffset = hours * 60 + minutes;
+                            timezoneMinutes = hours * 60 + minutes;
 
                             countConverted = temp - datetime;
                         }
@@ -479,10 +447,10 @@ public:
                     else
                     {
                         // zzz - time zone abreviation
-                        // use the locale object to search table
-                        int32_t delta = T_LOCALE::OffsetFromAbreviation(convert);
-                        timezonePositive = (delta >= 0);
-                        timezoneOffset = abs(delta);
+                        // adjust from local time
+                        int32_t deltaMinutes = T_LOCALE::TimeZoneMinutesFromAbreviation(convert);
+                        timezonePositive = (deltaMinutes >= 0);
+                        timezoneMinutes = abs(deltaMinutes);
                     }
 
                     countConverted = count;
@@ -503,15 +471,15 @@ public:
 
         // adjust our time by the timezone
         //
-        if (timezoneOffset)
+        if (timezoneMinutes != 0)
         {
             if (timezonePositive)
             {
-                *this += timezoneOffset * 60;
+                *this += timezoneMinutes * 60;
             }
             else
             {
-                *this -= timezoneOffset * 60;
+                *this -= timezoneMinutes * 60;
             }
         }
 

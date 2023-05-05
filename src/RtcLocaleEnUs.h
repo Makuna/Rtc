@@ -26,8 +26,6 @@ License along with Rtc.  If not, see
 
 #pragma once
  
-
-
 extern const RtcTimeZone c_tzEnUs[] PROGMEM;
 
 class RtcLocaleEnUs
@@ -35,6 +33,6 @@ class RtcLocaleEnUs
 public:
     static uint8_t CharsToMonth(const char* monthChars, size_t count);
     
-    static int32_t OffsetFromAbreviation(const char* abbr);
+    static int32_t TimeZoneMinutesFromAbreviation(const char* abbr);
 };
 
