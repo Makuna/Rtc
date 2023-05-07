@@ -273,6 +273,7 @@ public:
     // hh - hour
     // mm - minute
     // ss - seconds
+    // sssss - seconds with decimal (12.34)
     // 
     // z - +hh:mm or Z - 
     //      using this will adjust the time to time zone present in 
@@ -418,11 +419,12 @@ public:
                 case 'z':
                     if (count == 1)
                     {
-                        // +hh:mm or Z
+                        const char* temp = convert;
+
+                          // +hh:mm or Z
                         // adjusting to local time
-                        if (*convert == '+' || *convert == '-')
+                        if (*temp == '+' || *temp == '-')
                         {
-                            const char* temp = convert;
                             uint8_t hours;
                             uint8_t minutes;
 
@@ -433,11 +435,17 @@ public:
                             temp += CharsToNumber<uint8_t>(temp, &minutes, 2);
                             timezoneMinutes = hours * 60 + minutes;
 
+                            Serial.print(" ");
+                            Serial.println(timezoneMinutes);
+
                             countConverted = temp - datetime;
                         }
-                        else if (*convert == 'Z' || *convert == 'z')
+                        else if (*temp == 'Z' || *temp == 'z')
                         {
+                            Serial.print(" zulu");
+                            Serial.println(timezoneMinutes);
                             // nothing to adjust, zulu time is what we want
+                            countConverted = 1;
                         }
                         else
                         {
@@ -448,12 +456,11 @@ public:
                     {
                         // zzz - time zone abreviation
                         // adjust from local time
-                        int32_t deltaMinutes = T_LOCALE::TimeZoneMinutesFromAbreviation(convert);
+                        int32_t deltaMinutes;
+                        countConverted = T_LOCALE::TimeZoneMinutesFromAbreviation(&deltaMinutes, convert);
                         timezonePositive = (deltaMinutes >= 0);
                         timezoneMinutes = abs(deltaMinutes);
                     }
-
-                    countConverted = count;
                     break;
                 }
 
@@ -578,6 +585,22 @@ protected:
 
             left--;
             scan++;
+        }
+
+        // we ignore decimal numbers but we need to scan past them
+        //
+        if (left && '.' == *scan)
+        {
+            // skip decimal
+            left--;
+            scan++;
+            
+            // continue to discard numerals
+            while (left && '\0' != *scan && '0' <= *scan && *scan <= '9')
+            {
+                left--;
+                scan++;
+            }
         }
 
         return converted ? scan - str : 0;
