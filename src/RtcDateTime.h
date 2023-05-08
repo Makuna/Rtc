@@ -297,7 +297,7 @@ public:
     //      the string, thus providing a local time unless the string
     //      uses the Z timezone,
     //      without it, it will ignore the timezone and return the UTC 
-    // zzz - time zone abreviation
+    // zzz - time zone abbreviation
     //      using this will adjust the time to UTC from the time zone
     //      present in the string,
     //      without it, it will ignore the timezone and return the local
@@ -472,7 +472,7 @@ public:
                     }
                     else
                     {
-                        // zzz - abreviation timezone format
+                        // zzz - abbreviation timezone format
                         // adjust from local time
                         countConverted = T_LOCALE::TimeZoneMinutesFromAbbreviation(&timezoneMinutes, convert);
                     }

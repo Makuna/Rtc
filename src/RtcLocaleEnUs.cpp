@@ -48,7 +48,7 @@ const char stringPDT[] PROGMEM = "PDT";
 const char stringPST[] PROGMEM = "PST";
 const char stringUTC[] PROGMEM = "UTC";
 
-// collection in alphabetic order of abreviation
+// collection in alphabetic order of abbreviation
 //
 const RtcTimeZone c_tzEnUs[] PROGMEM =
 		{
