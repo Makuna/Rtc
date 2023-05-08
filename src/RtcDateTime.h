@@ -474,7 +474,7 @@ public:
                     {
                         // zzz - abreviation timezone format
                         // adjust from local time
-                        countConverted = T_LOCALE::TimeZoneMinutesFromAbreviation(&timezoneMinutes, convert);
+                        countConverted = T_LOCALE::TimeZoneMinutesFromAbbreviation(&timezoneMinutes, convert);
                     }
                     break;
                 }

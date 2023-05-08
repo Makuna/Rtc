@@ -114,7 +114,7 @@ uint8_t RtcLocaleEnUs::CharsToMonth(const char* monthChars, size_t count)
     return month;
 }
 
-size_t RtcLocaleEnUs::TimeZoneMinutesFromAbreviation(int32_t* minutes, const char* abbr)
+size_t RtcLocaleEnUs::TimeZoneMinutesFromAbbreviation(int32_t* minutes, const char* abbr)
 {
     size_t count = countof(c_tzEnUs);
 

@@ -33,11 +33,11 @@ class RtcLocaleEnUs
 public:
     static uint8_t CharsToMonth(const char* monthChars, size_t count);
     
-    // TimeZoneMinutesFromAbreviation
+    // TimeZoneMinutesFromAbbreviation
     // searches known table for the abbreviation and provides the minutes offset
     //
     //   *minutes - [out] variable filled with the minutes offset 
     //   returns - the number of chars parsed, usually 3 or 4.  0 if not found 
-    static size_t TimeZoneMinutesFromAbreviation(int32_t* minutes, const char* abbr);
+    static size_t TimeZoneMinutesFromAbbreviation(int32_t* minutes, const char* abbr);
 };
 
