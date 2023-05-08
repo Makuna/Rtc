@@ -303,7 +303,7 @@ public:
     //      without it, it will ignore the timezone and return the local
     //
     // return - index last converted of datetime
-    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(
+    template <typename T_LOCALE = RtcLocaleEnUs> size_t InitWithDateTimeFormatString(
             const char* format, 
             const char* datetime)
     {
@@ -500,7 +500,7 @@ public:
 
     // Version of above but supporting PROGMEM for the format, 
     // specifically the F("") use for format
-    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(
+    template <typename T_LOCALE = RtcLocaleEnUs> size_t InitWithDateTimeFormatString(
         const __FlashStringHelper* format,
         const char* datetime)
     {
