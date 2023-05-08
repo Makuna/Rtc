@@ -25,10 +25,9 @@ License along with Rtc.  If not, see
 -------------------------------------------------------------------------*/
 
 #include <Arduino.h>
+#include "RtcUtility.h"
 #include "RtcTimeZone.h"
 #include "RtcLocaleEnUs.h"
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 // due to how PROGMEM works, strings must be declared standalone
 //

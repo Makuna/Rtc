@@ -81,8 +81,8 @@ public:
     RtcDateTime(const char* date, const char* time)
     {
         // __DATE__ is always in english
-        InitWithDateTimeFormatString<RtcLocaleEnUs>("MMM DD YYYY", date);
-        InitWithDateTimeFormatString<RtcLocaleEnUs>("hh:mm:ss", time);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>(F("MMM DD YYYY"), date);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>(F("hh:mm:ss"), time);
     }
 
     bool IsValid() const;
@@ -129,30 +129,47 @@ public:
 	// total days since 1/1/2000
 	uint16_t TotalDays() const;
 	
-    // add seconds
+    // add unsigned seconds
     void operator += (uint32_t seconds)
     {
-        RtcDateTime after = RtcDateTime( TotalSeconds() + seconds );
-        *this = after;
+        *this = *this + seconds;
     }
 
     RtcDateTime operator + (uint32_t seconds) const
     {
-        RtcDateTime after = RtcDateTime(TotalSeconds() + seconds);
-        return after;
+        return RtcDateTime(TotalSeconds() + seconds);
+    }
+
+    // add signed seconds
+    void operator += (int32_t seconds)
+    {
+        *this = *this + seconds;
+    }
+
+    RtcDateTime operator + (int32_t seconds) const
+    {
+        uint32_t totalSeconds = TotalSeconds();
+        // never allowed to go before year 2000
+        if (seconds < 0 && abs(seconds) > totalSeconds)
+        {
+            totalSeconds = 0;
+        }
+        else
+        {
+            totalSeconds += seconds;
+        }
+        return RtcDateTime(totalSeconds);
     }
 
     // remove seconds
     void operator -= (uint32_t seconds)
     {
-        RtcDateTime before = RtcDateTime( TotalSeconds() - seconds );
-        *this = before;
+        *this = *this - seconds;
     }
 
     RtcDateTime operator - (uint32_t seconds) const
     {
-        RtcDateTime after = RtcDateTime(TotalSeconds() - seconds);
-        return after;
+        return RtcDateTime(TotalSeconds() - seconds);
     }
 
     bool operator == (const RtcDateTime& right)
@@ -251,7 +268,7 @@ public:
     void InitWithIso8601(const char* date)
     {
         // sample input: date = "Sat, 06 Dec 2009 12:34:56 GMT"
-        InitWithDateTimeFormatString<RtcLocaleEnUs>("*, DD MMM YYYY hh:mm:ss zzz", date);
+        InitWithDateTimeFormatString<RtcLocaleEnUs>(F("*, DD MMM YYYY hh:mm:ss zzz"), date);
     }
 
     //
@@ -286,13 +303,14 @@ public:
     //      without it, it will ignore the timezone and return the local
     //
     // return - index last converted of datetime
-    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(const char* format, const char* datetime)
+    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(
+            const char* format, 
+            const char* datetime)
     {
         const char specifiers[] = "*YMDhmsz";
         const char* scan = format;
         const char* convert = datetime;
-        uint32_t timezoneMinutes = 0;
-        bool timezonePositive = false;
+        int32_t timezoneMinutes = 0;
 
         // while chars in format and datetime
         while (*scan != '\0' && *datetime != '\0')
@@ -313,12 +331,14 @@ public:
                 size_t count = iEnd;
                 size_t countConverted = 0;
 
-                Serial.print(scan[iStart]);
-                Serial.print(">");
-                Serial.print(convert);
-                Serial.print("< ");
-                Serial.print(count);
-                Serial.println();
+                // handy debug tracing 
+                //
+                //Serial.print(scan[iStart]);
+                //Serial.print(">");
+                //Serial.print(convert);
+                //Serial.print("< ");
+                //Serial.print(count);
+                //Serial.println();
 
                 switch (scan[iStart])
                 {
@@ -335,15 +355,17 @@ public:
                         countConverted = skip - convert + 1;
                         count++;
 
-                        Serial.print("*>");
-                        Serial.print(scan + count);
-                        Serial.print("<->");
-                        Serial.print(convert + countConverted);
-                        Serial.print("< ");
-                        Serial.print(count);
-                        Serial.print("-");
-                        Serial.print(countConverted);
-                        Serial.println();
+                        // handy debug tracing 
+                        //
+                        //Serial.print("*>");
+                        //Serial.print(scan + count);
+                        //Serial.print("<->");
+                        //Serial.print(convert + countConverted);
+                        //Serial.print("< ");
+                        //Serial.print(count);
+                        //Serial.print("-");
+                        //Serial.print(countConverted);
+                        //Serial.println();
                     }
                     break;
 
@@ -421,30 +443,26 @@ public:
                     {
                         const char* temp = convert;
 
-                          // +hh:mm or Z
+                        // +hh:mm or Z formated timezone
                         // adjusting to local time
                         if (*temp == '+' || *temp == '-')
                         {
                             uint8_t hours;
                             uint8_t minutes;
 
-                            timezonePositive = (*temp == '+');
+                            int32_t timezoneSign = (*temp == '+') ? 1 : -1;
                             temp++;
                             temp += CharsToNumber<uint8_t>(temp, &hours, 2);
                             temp++; // :
                             temp += CharsToNumber<uint8_t>(temp, &minutes, 2);
-                            timezoneMinutes = hours * 60 + minutes;
-
-                            Serial.print(" ");
-                            Serial.println(timezoneMinutes);
+                            timezoneMinutes = (static_cast<int32_t>(hours) * 60 + minutes) * timezoneSign;
 
                             countConverted = temp - datetime;
                         }
                         else if (*temp == 'Z' || *temp == 'z')
                         {
-                            Serial.print(" zulu");
-                            Serial.println(timezoneMinutes);
-                            // nothing to adjust, zulu time is what we want
+                            // nothing to adjust, 
+                            // zulu time is what we want
                             countConverted = 1;
                         }
                         else
@@ -454,12 +472,9 @@ public:
                     }
                     else
                     {
-                        // zzz - time zone abreviation
+                        // zzz - abreviation timezone format
                         // adjust from local time
-                        int32_t deltaMinutes;
-                        countConverted = T_LOCALE::TimeZoneMinutesFromAbreviation(&deltaMinutes, convert);
-                        timezonePositive = (deltaMinutes >= 0);
-                        timezoneMinutes = abs(deltaMinutes);
+                        countConverted = T_LOCALE::TimeZoneMinutesFromAbreviation(&timezoneMinutes, convert);
                     }
                     break;
                 }
@@ -478,21 +493,25 @@ public:
 
         // adjust our time by the timezone
         //
-        if (timezoneMinutes != 0)
-        {
-            if (timezonePositive)
-            {
-                *this += timezoneMinutes * 60;
-            }
-            else
-            {
-                *this -= timezoneMinutes * 60;
-            }
-        }
+        *this += timezoneMinutes * 60;
 
         return convert - datetime;
     }
 
+    // Version of above but supporting PROGMEM for the format, 
+    // specifically the F("") use for format
+    template <typename T_LOCALE> size_t InitWithDateTimeFormatString(
+        const __FlashStringHelper* format,
+        const char* datetime)
+    {
+        char ramFormat[32];
+        
+        strncpy_P(ramFormat, 
+            reinterpret_cast<const char*>(format), 
+            countof(ramFormat));
+        return InitWithDateTimeFormatString<T_LOCALE>(ramFormat, datetime);
+    }
+    
     // convert our Day of Week to Rtc Day of Week 
     // RTC Hardware Day of Week is 1-7, 1 = Monday
     static uint8_t ConvertDowToRtc(uint8_t dow)

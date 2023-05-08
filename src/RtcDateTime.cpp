@@ -25,6 +25,7 @@ License along with Rtc.  If not, see
 -------------------------------------------------------------------------*/
 
 #include <Arduino.h>
+#include "RtcUtility.h"
 #include "RtcDateTime.h"
 
 const uint8_t c_daysInMonth[] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };

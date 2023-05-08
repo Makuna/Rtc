@@ -24,12 +24,11 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCDS1307_H__
-#define __RTCDS1307_H__
+#pragma once
 
 #include <Arduino.h>
-#include "RtcDateTime.h"
 #include "RtcUtility.h"
+#include "RtcDateTime.h"
 
 //I2C Slave Address  
 const uint8_t DS1307_ADDRESS = 0x68;
@@ -283,4 +282,3 @@ private:
     }
 };
 
-#endif // __RTCDS1307_H__

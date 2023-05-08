@@ -24,15 +24,14 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCDS3234_H__
-#define __RTCDS3234_H__
+#pragma once
 
 #include <Arduino.h>
 #include <SPI.h>
-
+#include "RtcUtility.h"
 #include "RtcDateTime.h"
 #include "RtcTemperature.h"
-#include "RtcUtility.h"
+
 
 
 //DS3234 Register Addresses
@@ -720,4 +719,3 @@ private:
 
 };
 
-#endif // __RTCDS3234_H__
