@@ -24,14 +24,13 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCDS3231_H__
-#define __RTCDS3231_H__
+#pragma once
 
 #include <Arduino.h>
-
+#include "RtcUtility.h"
 #include "RtcDateTime.h"
 #include "RtcTemperature.h"
-#include "RtcUtility.h"
+
 
 
 //I2C Slave Address  
@@ -682,4 +681,3 @@ private:
 
 };
 
-#endif // __RTCDS3231_H__

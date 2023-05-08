@@ -24,8 +24,7 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCTEMPERATURE_H__
-#define __RTCTEMPERATURE_H__
+#pragma once
 
 
 class RtcTemperature
@@ -173,5 +172,3 @@ public:
 protected:
     int16_t  _centiDegC;  // 1/100th of a degree temperature (100 x degC)
 };
-
-#endif // __RTCTEMPERATURE_H__

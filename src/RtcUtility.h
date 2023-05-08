@@ -24,12 +24,15 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCUTILITY_H__
-#define __RTCUTILITY_H__
+#pragma once
 
 // ESP32 complains if not included
 #if defined(ARDUINO_ARCH_ESP32)
 #include <inttypes.h>
+#endif
+
+#if !defined(countof)
+#define countof(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
 // Arduino has no standard for attributing methods used for ISRs
@@ -71,4 +74,4 @@ extern uint8_t BcdToUint8(uint8_t val);
 extern uint8_t Uint8ToBcd(uint8_t val);
 extern uint8_t BcdToBin24Hour(uint8_t bcdHour);
 
-#endif // __RTCUTILITY_H__
+

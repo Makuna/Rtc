@@ -24,12 +24,11 @@ License along with Rtc.  If not, see
 <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------*/
 
-#ifndef __RTCDS1302_H__
-#define __RTCDS1302_H__
+#pragma once
 
 #include <Arduino.h>
-#include "RtcDateTime.h"
 #include "RtcUtility.h"
+#include "RtcDateTime.h"
 #include "ThreeWire.h"
 
 
@@ -288,4 +287,3 @@ private:
     }
 };
 
-#endif // __RTCDS1302_H__
