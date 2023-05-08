@@ -33,6 +33,7 @@ License along with Rtc.  If not, see
 
 #include "RtcTimeZone.h"
 #include "RtcLocaleEnUs.h"
+#include "RtcLocaleEn.h"
 
 enum DayOfWeek
 {

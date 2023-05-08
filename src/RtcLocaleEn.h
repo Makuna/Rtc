@@ -26,11 +26,11 @@ License along with Rtc.  If not, see
 
 #pragma once
 
-class RtcLocaleEnUs
+class RtcLocaleEn
 {
 public:
     static uint8_t CharsToMonth(const char* monthChars, size_t count);
-    
+
     // TimeZoneMinutesFromAbbreviation
     // searches known table for the abbreviation and provides the minutes offset
     //
