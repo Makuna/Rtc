@@ -33,6 +33,7 @@ License along with Rtc.  If not, see
 
 #include "RtcTimeZone.h"
 #include "RtcLocaleEnUs.h"
+#include "RtcLocaleEn.h"
 
 enum DayOfWeek
 {
@@ -293,10 +294,10 @@ public:
     // sssss - seconds with decimal (12.34)
     // 
     // z - +hh:mm or Z - 
-    //      using this will adjust the time to time zone present in 
-    //      the string, thus providing a local time unless the string
-    //      uses the Z timezone,
-    //      without it, it will ignore the timezone and return the UTC 
+    //      using this will adjust the time to UTC from the time zone
+    //      using this will adjust the time to UTC from the time zone
+    //      present in the string,
+    //      without it, it will ignore the timezone and return the local
     // zzz - time zone abbreviation
     //      using this will adjust the time to UTC from the time zone
     //      present in the string,
@@ -491,9 +492,10 @@ public:
             }
         }
 
-        // adjust our time by the timezone
+        // adjust our time by the timezone to get GMT/Z
+        // as by default RtcDateTime is GMT
         //
-        *this += timezoneMinutes * 60;
+        *this -= timezoneMinutes * 60;
 
         return convert - datetime;
     }

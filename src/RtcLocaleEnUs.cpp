@@ -114,28 +114,23 @@ uint8_t RtcLocaleEnUs::CharsToMonth(const char* monthChars, size_t count)
     return month;
 }
 
-size_t RtcLocaleEnUs::TimeZoneMinutesFromAbbreviation(int32_t* minutes, const char* abbr)
+size_t RtcLocaleEnUs::TimeZoneMinutesFromAbbreviation(int32_t* minutes, 
+    const char* abbr)
 {
-    size_t count = countof(c_tzEnUs);
+    RtcTimeZone entry;
 
     *minutes = 0;
-    
-    // linear search since we have a small collection
-    // the list is in alphabetic order already for future binary search
-    for (size_t index = 0; index < count; index++)
+
+    size_t result = RtcTimeZone::BinarySearchProgmemTable(&entry,
+        abbr,
+        c_tzEnUs,
+        countof(c_tzEnUs));
+
+    if (result)
     {
-        RtcTimeZone entry;
-
-        // copy the entry from progmem
-        // string members still reside in PROGMEM though
-        memcpy_P(&entry, c_tzEnUs + index, sizeof(RtcTimeZone));
-
-        if (0 == strncmp_P(abbr, entry.abbr, 4))
-        {
-            *minutes = entry.offset;
-            return strlen_P(entry.abbr);
-        }
+        // found
+        *minutes = entry.offset;
     }
 
-    return 0;
+    return result;
 }
