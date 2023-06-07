@@ -66,6 +66,18 @@ TotalSeconds	KEYWORD2
 TotalSeconds64	KEYWORD2
 TotalDays	KEYWORD2
 DayOf	KEYWORD2
+IsValid	KEYWORD2
+Unix32Time	KEYWORD2
+InitWithUnix32Time	KEYWORD2
+Unix64Time	KEYWORD2
+InitWithUnix64Time	KEYWORD2
+Ntp32Time	KEYWORD2
+InitWithNtp32Time	KEYWORD2
+Ntp64Time	KEYWORD2
+InitWithNtp64Time	KEYWORD2
+InitWithDateTimeFormatString	KEYWORD2
+ConvertDowToRtc	KEYWORD2
+ConvertRtcToDow	KEYWORD2
 ControlFlags	KEYWORD2
 
 #######################################
@@ -152,4 +164,7 @@ Rtc_Wire_Error_NoAddressableDevice	LITERAL1
 Rtc_Wire_Error_UnsupportedRequest	LITERAL1
 Rtc_Wire_Error_Unspecific	LITERAL1
 Rtc_Wire_Error_CommunicationTimeout	LITERAL1
+RtcLocaleEnUs	LITERAL1
+RtcLocaleEn	LITERAL1
+
 
