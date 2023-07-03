@@ -121,7 +121,7 @@ public:
                 }
             }
 
-            Alarm alarm = { seconds, period };
+            Alarm alarm(seconds, period);
 
             if (seconds <= _seconds)
             {
@@ -130,7 +130,7 @@ public:
 
             for (uint8_t idx = 0; idx < _alarmsCount; idx++)
             {
-                if (_alarms[idx].period == AlarmPeriod_Expired)
+                if (_alarms[idx].Period == AlarmPeriod_Expired)
                 {
                     _alarms[idx] = alarm;
                     return idx;
@@ -145,8 +145,17 @@ public:
     {
         if (idx < _alarmsCount)
         {
-            _alarms[idx] = AlarmPeriod_Expired;
+            _alarms[idx].Period = AlarmPeriod_Expired;
         }
+    }
+
+    bool IsAlarmActive(uint8_t idx)
+    {
+        if (idx < _alarmsCount)
+        {
+            return (_alarms[idx].Period != AlarmPeriod_Expired);
+        }
+        return false;
     }
 
     void ProcessAlarms()
@@ -162,14 +171,14 @@ public:
 
             for (uint8_t idx = 0; idx < _alarmsCount; idx++)
             {
-                if (_alarms[idx].period != AlarmPeriod_Expired)
+                if (_alarms[idx].Period != AlarmPeriod_Expired)
                 {
-                    if (_alarms[idx].when <= _seconds)
+                    if (_alarms[idx].When <= _seconds)
                     {
-                        if (_alarms[idx].IsSingleFire)
+                        if (_alarms[idx].Period == AlarmPeriod_SingleFire)
                         {
                             // remove from list
-                            _alarms[idx].period = AlarmPeriod_Expired;
+                            _alarms[idx].Period = AlarmPeriod_Expired;
                         }
                         else
                         {
@@ -187,12 +196,18 @@ public:
 protected:
     struct Alarm
     {
-        uint32_t when; // seconds from RtcDateTime.TotalSeconds()
-        AlarmPeriod period;  
+        uint32_t When; // seconds from RtcDateTime.TotalSeconds()
+        AlarmPeriod Period;  
         
+        Alarm(uint32_t when = 0, AlarmPeriod period = AlarmPeriod_Expired) :
+            When(when),
+            Period(period)
+        {
+        }
+
         void IncrementWhen()
         {
-            switch (period)
+            switch (Period)
             {
             case AlarmPeriod_Expired:
                 break;
@@ -202,20 +217,20 @@ protected:
 
             case AlarmPeriod_Yearly:
                 {
-                    RtcDateTime temp(when);
+                    RtcDateTime temp(When);
                     RtcDateTime next(temp.Year() + 1,
                         temp.Month(),
                         temp.Day(),
                         temp.Hour(),
                         temp.Minute(),
                         temp.Second());
-                    when = next.TotalSeconds();
+                    When = next.TotalSeconds();
                 }
                 break;
 
             case AlarmPeriod_Yearly_Feb29th:
                 {
-                    RtcDateTime temp(when);
+                    RtcDateTime temp(When);
                     uint16_t year = temp.Year() + 1;
                     uint8_t day = 28;
 
@@ -230,7 +245,7 @@ protected:
                         temp.Hour(),
                         temp.Minute(),
                         temp.Second());
-                    when = next.TotalSeconds();
+                    When = next.TotalSeconds();
                 }
                 break;
 
@@ -239,7 +254,7 @@ protected:
             case AlarmPeriod_Monthly_30th:
             case AlarmPeriod_Monthly_31st:
                 {
-                    RtcDateTime temp(when);
+                    RtcDateTime temp(When);
 
                     uint16_t year = temp.Year();
                     uint8_t month = temp.Month() + 1;
@@ -251,16 +266,16 @@ protected:
                         month = 1;
                     }
                                         
-                    if (period == AlarmPeriod_Monthly)
+                    if (Period == AlarmPeriod_Monthly)
                     {
-                        // use the day of the month from previous when
+                        // use the day of the month from previous When
                         day = temp.Day();
                     }
                     else
                     {
                         // use the day of the month cached as it may have
-                        // been capped to the last day of the month in when
-                        day = 29 + (period - AlarmPeriod_Monthly_29th);
+                        // been capped to the last day of the month in When
+                        day = 29 + (Period - AlarmPeriod_Monthly_29th);
                     }
 
                     uint8_t daysInMonth = RtcDateTime::DaysInMonth(year, month);
@@ -275,20 +290,20 @@ protected:
                         temp.Hour(),
                         temp.Minute(),
                         temp.Second());
-                    when = next.TotalSeconds();
+                    When = next.TotalSeconds();
                 }
                 break;
 
             case AlarmPeriod_Weekly:
-                when += c_WeekAsSeconds;
+                When += c_WeekAsSeconds;
                 break;
 
             case AlarmPeriod_Daily:
-                when += c_DayAsSeconds;
+                When += c_DayAsSeconds;
                 break;
 
             case AlarmPeriod_Hourly:
-                when += c_HourAsSeconds;
+                When += c_HourAsSeconds;
                 break;
             }
         }
