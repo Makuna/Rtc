@@ -53,6 +53,11 @@ const uint32_t c_NtpEpoch32 = c_UnixEpoch32 + c_NtpEpoch32FromUnixEpoch32;
 
 extern const uint8_t c_daysInMonth[] PROGMEM;
 
+const uint32_t c_MinuteAsSeconds = 60;
+const uint32_t c_HourAsSeconds = 60 * c_MinuteAsSeconds;
+const uint32_t c_DayAsSeconds = 24 * c_HourAsSeconds;
+const uint32_t c_WeekAsSeconds = 7 * c_DayAsSeconds;
+
 
 class RtcDateTime
 {
@@ -79,7 +84,8 @@ public:
 
     // RtcDateTime compileDateTime(__DATE__, __TIME__);
     // sample input: date = "Dec 06 2009", time = "12:34:56"
-    RtcDateTime(const char* date, const char* time)
+    RtcDateTime(const char* date, const char* time) :
+        RtcDateTime(0)
     {
         // __DATE__ is always in english
         InitWithDateTimeFormatString<RtcLocaleEnUs>(F("MMM DD YYYY"), date);
@@ -130,6 +136,10 @@ public:
 	// total days since 1/1/2000
 	uint16_t TotalDays() const;
 	
+    // return the next day that falls on the given day of week
+    // if this day is that day of week, it will return this day
+    RtcDateTime NextDayOfWeek(uint8_t dayOfWeek) const;
+
     // add unsigned seconds
     void operator += (uint32_t seconds)
     {
@@ -278,6 +288,7 @@ public:
     // https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations#:~:text=List%20of%20time%20zone%20abbreviations%20%20%20,%20%20UTC%2B08%3A00%20%2051%20more%20rows%20
     // 
     // * - ignore until next char
+    // ! = ignore until not next char
     // 
     // YY - two digit year, assumes 2000 +
     // YYYY - four digit year
@@ -308,7 +319,7 @@ public:
             const char* format, 
             const char* datetime)
     {
-        const char specifiers[] = "*YMDhmsz";
+        const char specifiers[] = "*!YMDhmsz";
         const char* scan = format;
         const char* convert = datetime;
         int32_t timezoneMinutes = 0;
@@ -369,6 +380,33 @@ public:
                         //Serial.println();
                     }
                     break;
+
+                case '!':
+                {
+                    // increment through convert until the matching char 
+                    // from scan after the * token is not present
+                    const char* skip = convert;
+                    while (*skip != '\0' && *skip == scan[iEnd])
+                    {
+                        skip++;
+                    }
+                    
+                    countConverted = skip - convert;
+                    count++;
+
+                    // handy debug tracing 
+                    //
+                    //Serial.print("!>");
+                    //Serial.print(scan + count);
+                    //Serial.print("<->");
+                    //Serial.print(convert + countConverted);
+                    //Serial.print("< ");
+                    //Serial.print(count);
+                    //Serial.print("-");
+                    //Serial.print(countConverted);
+                    //Serial.println();
+                }
+                break;
 
                 case 'Y':
                     if (count >= 4)
@@ -529,6 +567,38 @@ public:
     static uint8_t ConvertRtcToDow(uint8_t rtcDow)
     {
         return (rtcDow % 7);
+    }
+
+    // returns the number days in the month
+    // month (1-12)
+    static uint8_t DaysInMonth(uint16_t year, uint8_t month)
+    {
+        uint8_t zMonth = 0;
+        // cap and convert to zero based
+        if (month != 0)
+        {
+            if (month > 11)
+            {
+                zMonth = 11;
+            }
+            else
+            {
+                zMonth = month - 1;
+            }
+        }
+
+        uint8_t days = pgm_read_byte(c_daysInMonth + zMonth);
+        // check february for leap years
+        if (month == 2 && IsLeapYear(year))
+        {
+            days++;
+        }
+        return days;
+    }
+
+    static bool IsLeapYear(uint16_t year)
+    {
+        return ((year % 4) == 0);
     }
 
 protected:
