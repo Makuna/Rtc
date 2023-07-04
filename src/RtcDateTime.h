@@ -569,22 +569,23 @@ public:
     // month (1-12)
     static uint8_t DaysInMonth(uint16_t year, uint8_t month)
     {
+        uint8_t zMonth = 0;
         // cap and convert to zero based
         if (month != 0)
         {
-            if (month > 12)
+            if (month > 11)
             {
-                month = 11;
+                zMonth = 11;
             }
             else
             {
-                month--;
+                zMonth = month - 1;
             }
         }
 
-        uint8_t days = pgm_read_byte(c_daysInMonth + month);
+        uint8_t days = pgm_read_byte(c_daysInMonth + zMonth);
         // check february for leap years
-        if (month == 1 && IsLeapYear(year))
+        if (month == 2 && IsLeapYear(year))
         {
             days++;
         }

@@ -34,18 +34,20 @@ enum AlarmPeriod
 {
     AlarmPeriod_Expired,
     AlarmPeriod_SingleFire,
-    AlarmPeriod_Yearly, // Just use this one, not the next three
-    AlarmPeriod_Yearly_Feb29th, // last of month in Feb if days less than and not a leap year, 
-    AlarmPeriod_Monthly, // Just use this one, not the next three
-    AlarmPeriod_Monthly_29th, // last of month if days less than, 
-    AlarmPeriod_Monthly_30th, // otherwise the day of month matching,
-    AlarmPeriod_Monthly_31st, // this will be set internally, just use monthly
+    AlarmPeriod_Yearly, 
+    AlarmPeriod_Monthly, 
+    AlarmPeriod_Monthly_LastDay,
     AlarmPeriod_Weekly, 
     AlarmPeriod_Daily,
     AlarmPeriod_Hourly,
+    // the below values are for internal use only
+    AlarmPeriod_Yearly_Feb29th, // last of month in Feb if days less than and not a leap year, 
+    AlarmPeriod_Monthly_29th, // last of month if days less than, 
+    AlarmPeriod_Monthly_30th, // otherwise the day of month matching,
+    AlarmPeriod_Monthly_31st, // this will be set internally, just use monthly
 };
 
-typedef void(*RtcAlarmCallback)(uint8_t index);
+typedef void(*RtcAlarmCallback)(uint8_t index, const RtcDateTime& alarm);
 
 template <RtcAlarmCallback V_CALLBACK> class RtcAlarmManager
 {
@@ -88,8 +90,26 @@ public:
         {
             uint32_t seconds = when.TotalSeconds();
 
-            if (period == AlarmPeriod_Monthly)
+            if (period == AlarmPeriod_Monthly_LastDay)
             {
+                period = AlarmPeriod_Monthly_31st;
+                // adjust given when to last day of its set month
+                uint8_t daysInMonth = RtcDateTime::DaysInMonth(when.Year(), when.Month());
+                if (when.Day() < daysInMonth)
+                {
+                    RtcDateTime temp(when.Year(),
+                        when.Month(),
+                        daysInMonth,
+                        when.Hour(),
+                        when.Minute(),
+                        when.Second());
+                    seconds = temp.TotalSeconds();
+                }
+            }
+            else if (period == AlarmPeriod_Monthly ||
+                (period >= AlarmPeriod_Monthly_29th && period <= AlarmPeriod_Monthly_31st))
+            {
+                period = AlarmPeriod_Monthly;
                 // adjust alarm period to store target day of month
                 // for when months have less days than the target
                 // it will trigger on the last day of the month but
@@ -113,7 +133,7 @@ public:
                 if (when.Day() == 29 && when.Month() == 2)
                 {
                     // adjust alarm period to store target day of month
-                    // for when Feb 29th is target but following year isnt 
+                    // for when Feb 29th is target but following year isn't 
                     // a leap year it will trigger on the last day of Feb but
                     // retain and trigger on specific day of month when
                     // available
@@ -175,6 +195,8 @@ public:
                 {
                     if (_alarms[idx].When <= _seconds)
                     {
+                        RtcDateTime alarm(_alarms[idx].When);
+
                         if (_alarms[idx].Period == AlarmPeriod_SingleFire)
                         {
                             // remove from list
@@ -186,7 +208,7 @@ public:
                         }
 
                         // make callback
-                        V_CALLBACK(idx);
+                        V_CALLBACK(idx, alarm);
                     }
                 }
             }
@@ -304,6 +326,9 @@ protected:
 
             case AlarmPeriod_Hourly:
                 When += c_HourAsSeconds;
+                break;
+
+            case default:
                 break;
             }
         }
