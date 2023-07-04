@@ -47,11 +47,20 @@ enum AlarmPeriod
     AlarmPeriod_Monthly_31st, // this will be set internally, just use monthly
 };
 
-typedef void(*RtcAlarmCallback)(uint8_t index, const RtcDateTime& alarm);
+enum AlarmAddError
+{
+    AlarmAddError_TimePast = -3,
+    AlarmAddError_TimeInvalid,
+    AlarmAddError_CountExceeded,
+};
+
+typedef void(*RtcAlarmCallback)(uint8_t id, const RtcDateTime& alarm);
 
 template <RtcAlarmCallback V_CALLBACK> class RtcAlarmManager
 {
 public:
+    // construct
+    // count - the max number of active alarms
     RtcAlarmManager(uint8_t count) :
         _alarmsCount(count)
     {
@@ -63,6 +72,10 @@ public:
         delete[] _alarms;
     }
 
+    // Sync the time to the external trusted source, like
+    // a RTC module
+    // Do this at regular intervals as the internal CPU timing
+    // is not very accurate
     int32_t Sync(const RtcDateTime& now)
     {
         uint32_t msNow = millis();
@@ -76,6 +89,10 @@ public:
         return (secondsNow - secondsOld);
     }
 
+    // retrieve what the current time the AlarmManager thinks it is
+    // due to inacurrancy of the CPU timing this may not be exact,
+    // but it is good enough for most timing needs
+    // regular use of Sync() will improve this
     RtcDateTime Now() const
     {
         uint32_t msNow = millis();
@@ -83,9 +100,15 @@ public:
         return RtcDateTime(secondsNow);
     }
 
+    // add an alarm
+    // when - the date and time to start triggering alarms
+    // period - the type of alarm, does it repeat and how often
+    // return - if postive, the id of the Alarm, otherwise see AlarmAddError
     int8_t AddAlarm(const RtcDateTime& when,
         AlarmPeriod period)
     {
+        int8_t result = AlarmAddError_TimeInvalid;
+
         if (when.IsValid())
         {
             uint32_t seconds = when.TotalSeconds();
@@ -143,41 +166,62 @@ public:
 
             Alarm alarm(seconds, period);
 
+            // if the alarm was added that was already in the past,
+            // we increment the when to the next repeat
+            // for non-repeatable alarms this may expire them
             if (seconds <= _seconds)
             {
                 alarm.IncrementWhen();
             }
 
-            for (uint8_t idx = 0; idx < _alarmsCount; idx++)
+            if (alarm.Period == AlarmPeriod_Expired)
             {
-                if (_alarms[idx].Period == AlarmPeriod_Expired)
+                result = AlarmAddError_TimePast;
+            }
+            else
+            {
+                result = AlarmAddError_CountExceeded;
+
+                for (uint8_t id = 0; id < _alarmsCount; id++)
                 {
-                    _alarms[idx] = alarm;
-                    return idx;
+                    if (_alarms[id].Period == AlarmPeriod_Expired)
+                    {
+                        _alarms[id] = alarm;
+                        result = id;
+                        break;
+                    }
                 }
             }
-            return -1;
         }
-        return -2;
+        return result;
     }
 
-    void RemoveAlarm(uint8_t idx)
+    // remove an existing alarm 
+    // id - previously returned id from AddAlarm()
+    void RemoveAlarm(uint8_t id)
     {
-        if (idx < _alarmsCount)
+        if (id < _alarmsCount)
         {
-            _alarms[idx].Period = AlarmPeriod_Expired;
+            _alarms[id].Period = AlarmPeriod_Expired;
         }
     }
 
-    bool IsAlarmActive(uint8_t idx)
+    // check if the alarm is still active 
+    // id - previously returned id from AddAlarm()
+    bool IsAlarmActive(uint8_t id)
     {
-        if (idx < _alarmsCount)
+        if (id < _alarmsCount)
         {
-            return (_alarms[idx].Period != AlarmPeriod_Expired);
+            return (_alarms[id].Period != AlarmPeriod_Expired);
         }
         return false;
     }
 
+    // process all the alarms which can trigger callbacks
+    // call at regular intervals, if you need seconds accuracy, call
+    // every second.  
+    // There is little need to call this faster than a few
+    // times per second but it doesn't hurt anything
     void ProcessAlarms()
     {
         uint32_t msNow = millis();
@@ -188,27 +232,30 @@ public:
             // update seconds based on passed time using millis()
             _seconds += msDelta / 1000;
             _msLast = msNow - (msDelta % 1000); // retain fractional second
+            
+            // used a local seconds in case a callback changes it
+            uint32_t seconds = _seconds; 
 
-            for (uint8_t idx = 0; idx < _alarmsCount; idx++)
+            for (uint8_t id = 0; id < _alarmsCount; id++)
             {
-                if (_alarms[idx].Period != AlarmPeriod_Expired)
+                if (_alarms[id].Period != AlarmPeriod_Expired)
                 {
-                    if (_alarms[idx].When <= _seconds)
+                    if (_alarms[id].When <= seconds)
                     {
-                        RtcDateTime alarm(_alarms[idx].When);
+                        RtcDateTime alarm(_alarms[id].When);
 
-                        if (_alarms[idx].Period == AlarmPeriod_SingleFire)
+                        if (_alarms[id].Period == AlarmPeriod_SingleFire)
                         {
                             // remove from list
-                            _alarms[idx].Period = AlarmPeriod_Expired;
+                            _alarms[id].Period = AlarmPeriod_Expired;
                         }
                         else
                         {
-                            _alarms[idx].IncrementWhen();
+                            _alarms[id].IncrementWhen();
                         }
 
                         // make callback
-                        V_CALLBACK(idx, alarm);
+                        V_CALLBACK(id, alarm);
                     }
                 }
             }
@@ -235,6 +282,7 @@ protected:
                 break;
 
             case AlarmPeriod_SingleFire:
+                Period = AlarmPeriod_Expired;
                 break;
 
             case AlarmPeriod_Yearly:
@@ -328,15 +376,15 @@ protected:
                 When += c_HourAsSeconds;
                 break;
 
-            case default:
+            default:
                 break;
             }
         }
     };
 
-    Alarm* _alarms;
-    uint8_t _alarmsCount;
-    uint32_t _msLast;
-    uint32_t _seconds;
+    Alarm* _alarms; // table of possible alarms
+    uint8_t _alarmsCount; // max alarms in _alarms
+    uint32_t _msLast; // the last call to millis()
+    uint32_t _seconds; // the approximate date time, as seconds from 2000
 };
 
