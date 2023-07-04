@@ -45,11 +45,13 @@ enum AlarmPeriod
     AlarmPeriod_Monthly_29th, // last of month if days less than, 
     AlarmPeriod_Monthly_30th, // otherwise the day of month matching,
     AlarmPeriod_Monthly_31st, // this will be set internally, just use monthly
+    AlarmPeriod_StartOfSpecifics = 60 // anything over this is considered a specific time in seconds
 };
 
 enum AlarmAddError
 {
-    AlarmAddError_TimePast = -3,
+    AlarmAddError_PeriodInvalid = -4,
+    AlarmAddError_TimePast,
     AlarmAddError_TimeInvalid,
     AlarmAddError_CountExceeded,
 };
@@ -102,97 +104,104 @@ public:
 
     // add an alarm
     // when - the date and time to start triggering alarms
-    // period - the type of alarm, does it repeat and how often
+    // period - the type of alarm, does it repeat and how often, see AlarmPeriod enum
     // return - if postive, the id of the Alarm, otherwise see AlarmAddError
     int8_t AddAlarm(const RtcDateTime& when,
-        AlarmPeriod period)
+        uint32_t period)
     {
-        int8_t result = AlarmAddError_TimeInvalid;
-
-        if (when.IsValid())
+        if (!when.IsValid())
         {
-            uint32_t seconds = when.TotalSeconds();
+            return AlarmAddError_TimeInvalid;
+        }
+        if (period > AlarmPeriod_Monthly_31st &&
+            period < AlarmPeriod_StartOfSpecifics)
+        {
+            return AlarmAddError_PeriodInvalid;
+        }
 
-            if (period == AlarmPeriod_Monthly_LastDay)
+        int8_t result = AlarmAddError_TimeInvalid;
+        uint32_t seconds = when.TotalSeconds();
+
+        if (period == AlarmPeriod_Monthly_LastDay)
+        {
+            period = AlarmPeriod_Monthly_31st;
+            // adjust given when to last day of its set month
+            uint8_t daysInMonth = RtcDateTime::DaysInMonth(when.Year(), when.Month());
+            if (when.Day() < daysInMonth)
+            {
+                RtcDateTime temp(when.Year(),
+                    when.Month(),
+                    daysInMonth,
+                    when.Hour(),
+                    when.Minute(),
+                    when.Second());
+                seconds = temp.TotalSeconds();
+            }
+        }
+        else if (period == AlarmPeriod_Monthly ||
+            (period >= AlarmPeriod_Monthly_29th && period <= AlarmPeriod_Monthly_31st))
+        {
+            period = AlarmPeriod_Monthly;
+            // adjust alarm period to store target day of month
+            // for when months have less days than the target
+            // it will trigger on the last day of the month but
+            // retain and trigger on specific day of month when
+            // available
+            if (when.Day() == 29)
+            {
+                period = AlarmPeriod_Monthly_29th;
+            }
+            else if (when.Day() == 30)
+            {
+                period = AlarmPeriod_Monthly_30th;
+            }
+            else if (when.Day() == 31)
             {
                 period = AlarmPeriod_Monthly_31st;
-                // adjust given when to last day of its set month
-                uint8_t daysInMonth = RtcDateTime::DaysInMonth(when.Year(), when.Month());
-                if (when.Day() < daysInMonth)
-                {
-                    RtcDateTime temp(when.Year(),
-                        when.Month(),
-                        daysInMonth,
-                        when.Hour(),
-                        when.Minute(),
-                        when.Second());
-                    seconds = temp.TotalSeconds();
-                }
             }
-            else if (period == AlarmPeriod_Monthly ||
-                (period >= AlarmPeriod_Monthly_29th && period <= AlarmPeriod_Monthly_31st))
+        }
+        else if (period == AlarmPeriod_Yearly)
+        {
+            if (when.Day() == 29 && when.Month() == 2)
             {
-                period = AlarmPeriod_Monthly;
                 // adjust alarm period to store target day of month
-                // for when months have less days than the target
-                // it will trigger on the last day of the month but
+                // for when Feb 29th is target but following year isn't 
+                // a leap year it will trigger on the last day of Feb but
                 // retain and trigger on specific day of month when
                 // available
-                if (when.Day() == 29)
-                {
-                    period = AlarmPeriod_Monthly_29th;
-                }
-                else if (when.Day() == 30)
-                {
-                    period = AlarmPeriod_Monthly_30th;
-                }
-                else if (when.Day() == 31)
-                {
-                    period = AlarmPeriod_Monthly_31st;
-                }
+                period = AlarmPeriod_Yearly_Feb29th;
             }
-            else if (period == AlarmPeriod_Yearly)
+        }
+
+        Alarm alarm(seconds, period);
+
+        // if the alarm was added that was already in the past,
+        // we increment the when to the next repeat
+        // for non-repeatable alarms this may expire them
+        if (seconds <= _seconds)
+        {
+            alarm.IncrementWhen();
+        }
+
+        if (alarm.Period == AlarmPeriod_Expired)
+        {
+            result = AlarmAddError_TimePast;
+        }
+        else
+        {
+            result = AlarmAddError_CountExceeded;
+
+            for (uint8_t id = 0; id < _alarmsCount; id++)
             {
-                if (when.Day() == 29 && when.Month() == 2)
+                if (_alarms[id].Period == AlarmPeriod_Expired)
                 {
-                    // adjust alarm period to store target day of month
-                    // for when Feb 29th is target but following year isn't 
-                    // a leap year it will trigger on the last day of Feb but
-                    // retain and trigger on specific day of month when
-                    // available
-                    period = AlarmPeriod_Yearly_Feb29th;
-                }
-            }
-
-            Alarm alarm(seconds, period);
-
-            // if the alarm was added that was already in the past,
-            // we increment the when to the next repeat
-            // for non-repeatable alarms this may expire them
-            if (seconds <= _seconds)
-            {
-                alarm.IncrementWhen();
-            }
-
-            if (alarm.Period == AlarmPeriod_Expired)
-            {
-                result = AlarmAddError_TimePast;
-            }
-            else
-            {
-                result = AlarmAddError_CountExceeded;
-
-                for (uint8_t id = 0; id < _alarmsCount; id++)
-                {
-                    if (_alarms[id].Period == AlarmPeriod_Expired)
-                    {
-                        _alarms[id] = alarm;
-                        result = id;
-                        break;
-                    }
+                    _alarms[id] = alarm;
+                    result = id;
+                    break;
                 }
             }
         }
+        
         return result;
     }
 
@@ -266,9 +275,9 @@ protected:
     struct Alarm
     {
         uint32_t When; // seconds from RtcDateTime.TotalSeconds()
-        AlarmPeriod Period;  
+        uint32_t Period;  
         
-        Alarm(uint32_t when = 0, AlarmPeriod period = AlarmPeriod_Expired) :
+        Alarm(uint32_t when = 0, uint32_t period = AlarmPeriod_Expired) :
             When(when),
             Period(period)
         {
@@ -377,6 +386,7 @@ protected:
                 break;
 
             default:
+                When += Period;
                 break;
             }
         }

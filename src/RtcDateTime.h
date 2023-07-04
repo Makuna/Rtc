@@ -136,6 +136,10 @@ public:
 	// total days since 1/1/2000
 	uint16_t TotalDays() const;
 	
+    // return the next day that falls on the given day of week
+    // if this day is that day of week, it will return this day
+    RtcDateTime NextDayOfWeek(uint8_t dayOfWeek) const;
+
     // add unsigned seconds
     void operator += (uint32_t seconds)
     {

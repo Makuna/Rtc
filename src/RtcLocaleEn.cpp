@@ -431,7 +431,7 @@ const RtcTimeZone c_tzEn[] PROGMEM =
 	{ stringWAST, 2 * 60 },    // West Africa Summer Time
 	{ stringWAT, 1 * 60 },    // West Africa Time
 	{ stringWEST, 1 * 60 },    // Western European Summer Time
-	{ stringWET,  },    // Western European Time
+	{ stringWET,  0},    // Western European Time
 	{ stringWIB, 7 * 60 },    // Western Indonesian Time
 	{ stringWIT, 9 * 60 },    // Eastern Indonesian Time
 	{ stringWITA, 8 * 60 },    // Central Indonesia Time
@@ -439,7 +439,7 @@ const RtcTimeZone c_tzEn[] PROGMEM =
 	{ stringWGT, -3 * 60 },    // West Greenland Time[15]
 	{ stringWST, 8 * 60 },    // Western Standard Time
 	{ stringYAKT, 9 * 60 },    // Yakutsk Time
-	{ stringYEKT, 5 * 60 },    // Yekaterinburg Time
+	{ stringYEKT, 5 * 60 }    // Yekaterinburg Time
 };
 
 

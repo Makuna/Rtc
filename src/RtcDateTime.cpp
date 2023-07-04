@@ -126,4 +126,21 @@ uint16_t RtcDateTime::TotalDays() const
 	return DaysSinceFirstOfYear2000<uint16_t>(_yearFrom2000, _month, _dayOfMonth);
 }
 
+// return the next day that falls on the given day of week
+// if this day is that day of week, it will return this day
+RtcDateTime RtcDateTime::NextDayOfWeek(uint8_t dayOfWeek) const
+{
+    uint8_t currentDayOfWeek = DayOfWeek();
+    RtcDateTime result;
+    int8_t delta = (dayOfWeek - currentDayOfWeek);
+    
+    // only want time in the future
+    if (delta < 0)
+    {
+        delta += 7;
+    }
+
+    result = *this + (delta * c_DayAsSeconds);
+    return result;
+}
 
