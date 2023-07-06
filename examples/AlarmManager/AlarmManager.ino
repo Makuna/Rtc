@@ -3,17 +3,12 @@
 #include <RtcDS1307.h> // Replace with the RTC you have
 
 // foreward declare our alarm manager callback
-void alarmCallback(uint8_t index, const RtcDateTime& alarm);
+void alarmCallback(uint8_t id, const RtcDateTime& alarm);
 // global instance of the manager with three possible alarms
 RtcAlarmManager<alarmCallback> Alarms(3);
 
 // Replace with the RTC you have
 RtcDS1307<TwoWire> Rtc(Wire);
-
-// our three alarms
-int8_t idAlarmSync;
-int8_t idAlarmDaily;
-int8_t idAlarmWeekly;
 
 void setup () 
 {
@@ -33,19 +28,42 @@ void setup ()
     // Sync the Alarms to current time
     Alarms.Sync(now);
 
+    // NOTE:  Due to this sketch not deleting alarms, the returned ids from
+    // AddAlarm can be assumed to start at zero and increment from there.
+    // Otherwise the ids would need to be captured and used in the callback
+    //
+    int8_t result;
     // add an alarm to sync time from rtc at a regular interval,
     // due to CPU timing variance, the Alarms time can get off over
     // time, so this alarm will trigger a resync every 20 minutes 
-    idAlarmSync = Alarms.AddAlarm(now, 20 * c_MinuteAsSeconds); // every 20 minutes
+    result = Alarms.AddAlarm(now, 20 * c_MinuteAsSeconds); // every 20 minutes
+    if (result < 0) 
+    {
+        // an error happened
+        Serial.print("AddAlarm Sync failed : ");
+        Serial.print(result);
+    }
 
     // add a daily alarm at 5:30am
     RtcDateTime working(now.Year(), now.Month(), now.Day(), 5, 30, 0);
-    idAlarmDaily = Alarms.AddAlarm(working, AlarmPeriod_Daily);
+    result = Alarms.AddAlarm(working, AlarmPeriod_Daily);
+    if (result < 0)
+    {
+        // an error happened
+        Serial.print("AddAlarm Daily failed : ");
+        Serial.print(result);
+    }
 
     // add a weekly alarm for Saturday at 7:30am
     working = RtcDateTime(now.Year(), now.Month(), now.Day(), 7, 30, 0);
     working = working.NextDayOfWeek(DayOfWeek_Saturday);
-    idAlarmWeekly = Alarms.AddAlarm(working, AlarmPeriod_Weekly);
+    result = Alarms.AddAlarm(working, AlarmPeriod_Weekly);
+    if (result < 0)
+    {
+        // an error happened
+        Serial.print("AddAlarm Weekly failed : ");
+        Serial.print(result);
+    }
 
     Serial.println("Running...");
 }
@@ -56,21 +74,29 @@ void loop ()
     Alarms.ProcessAlarms();
 }
 
-void alarmCallback(uint8_t index, [[maybe_unused]] const RtcDateTime& alarm)
+void alarmCallback(uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
 {
-    if (index == idAlarmSync)
+    // NOTE:  Due to this sketch not deleting alarms, the returned ids from
+    // AddAlarm can be assumed to start at zero and increment from there.
+    // Otherwise the ids would need to be captured and used here 
+    //
+    switch (id)
     {
-        // periodic sync from trusted source to minimize
-        // drift due to inaccurate CPU timing
-        RtcDateTime now = Rtc.GetDateTime();
-        Alarms.Sync(now);
-    }
-    else if (index == idAlarmDaily)
-    {
-        Serial.println("ALARM: Its 5:30am!");
-    }
-    else if (index == idAlarmWeekly)
-    {
-        Serial.println("ALARM: Its Saturday at 7:30am!");
+    case 0:
+        {   
+            // periodic sync from trusted source to minimize
+            // drift due to inaccurate CPU timing
+            RtcDateTime now = Rtc.GetDateTime();
+            Alarms.Sync(now); 
+        }
+        break;
+
+    case 1:
+        Serial.println("DAILY ALARM: Its 5:30am!");
+        break;
+
+    case 2:
+        Serial.println("WEEKLY ALARM: Its Saturday at 7:30am!");
+        break;
     }
 }
