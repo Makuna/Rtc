@@ -16,9 +16,13 @@ DS3231AlarmOne	KEYWORD1
 DS3231AlarmTwo	KEYWORD1
 RtcDS3231	KEYWORD1
 EepromAt24c32	KEYWORD1
+RtcAlarmManager	KEYWORD1
 RtcTemperature	KEYWORD1
 RtcDateTime	KEYWORD1
 DayOfWeek	KEYWORD1
+AlarmPeriod	KEYWORD1
+AlarmAddError	KEYWORD1
+RtcAlarmCallback	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -166,5 +170,16 @@ Rtc_Wire_Error_Unspecific	LITERAL1
 Rtc_Wire_Error_CommunicationTimeout	LITERAL1
 RtcLocaleEnUs	LITERAL1
 RtcLocaleEn	LITERAL1
-
+AlarmPeriod_Expired	LITERAL1
+AlarmPeriod_SingleFire	LITERAL1
+AlarmPeriod_Yearly	LITERAL1
+AlarmPeriod_Monthly	LITERAL1
+AlarmPeriod_Monthly_LastDay	LITERAL1
+AlarmPeriod_Weekly	LITERAL1
+AlarmPeriod_Daily	LITERAL1
+AlarmPeriod_Hourly	LITERAL1
+AlarmAddError_PeriodInvalid	LITERAL1
+AlarmAddError_TimePast	LITERAL1
+AlarmAddError_TimeInvalid	LITERAL1
+AlarmAddError_CountExceeded	LITERAL1
 
