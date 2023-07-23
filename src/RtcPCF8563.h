@@ -73,8 +73,11 @@ enum PCF8563SquareWavePinMode
 
 enum PCF8563TimerMode
 {
-    PCF8563TimerMode_Seconds = 0b10000010,
-    PCF8563TimerMode_Minutes = 0b10000011
+    PCF8563TimerMode_None            = 0b00000000,
+    PCF8563TimerMode_4096thOfASecond = 0b10000000,
+    PCF8563TimerMode_64thOfASecond   = 0b10000001,
+    PCF8563TimerMode_Seconds         = 0b10000010,
+    PCF8563TimerMode_Minutes         = 0b10000011
 };
 
 enum PCF8563AlarmControlFlags
@@ -332,6 +335,11 @@ public:
         sreg &= ~_BV(PCF8563_STATUS_TF);
         sreg &= ~(_BV(PCF8563_STATUS_TIE) | _BV(PCF8563_STATUS_TITP));
         setReg(PCF8563_REG_STATUS, sreg);
+
+        if (_lastError == Rtc_Wire_Error_None)
+        {
+            setReg(PCF8563_REG_TIMER_CONTROL, PCF8563TimerMode_None);
+        }
     }
 
     // Latch must be called after an alarm otherwise it will not
