@@ -75,12 +75,12 @@ enum PCF8563TimerMode
 {
     PCF8563TimerMode_Seconds = 0b10000010,
     PCF8563TimerMode_Minutes = 0b10000011
-}
+};
 
 enum PCF8563AlarmControlFlags
 {
-    PCF8563AlarmControl_MinuteMatch = 0x00,
-    PCF8563AlarmControl_HourMatch = 0x01,
+    PCF8563AlarmControl_MinuteMatch = 0x01,
+    PCF8563AlarmControl_HourMatch = 0x02,
     PCF8563AlarmControl_DayOfMonthMatch = 0x04,
     PCF8563AlarmControl_DayOfWeekMatch = 0x08
 };
@@ -92,7 +92,7 @@ public:
         uint8_t hour,
         uint8_t minute,
         uint8_t dayOfWeek,
-        PCF8563AlarmOneControl controlFlags) :
+        uint8_t controlFlags) :
         _flags(controlFlags),
         _dayOfMonth(dayOfMonth),
         _hour(hour),
@@ -121,7 +121,7 @@ public:
         return _dayOfWeek;
     }
 
-    PCF8563AlarmControlFlags ControlFlags() const
+    uint8_t ControlFlags() const
     {
         return _flags;
     }
@@ -141,7 +141,7 @@ public:
     }
 
 protected:
-    PCF8563AlarmControl _flags;
+    uint8_t _flags;
 
     uint8_t _dayOfMonth;
     uint8_t _hour;

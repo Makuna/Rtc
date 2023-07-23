@@ -85,7 +85,7 @@ void setup ()
 
     // Alarm 1 set to trigger every day when 
     // the hours, minutes, and seconds match
-    RtcDateTime alarmTime = now + 88; // into the future
+    RtcDateTime alarmTime = now + 88ul; // into the future
     DS3234AlarmOne alarm1(
             alarmTime.Day(),
             alarmTime.Hour(),
