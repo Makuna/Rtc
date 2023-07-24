@@ -162,6 +162,10 @@ void setup ()
     Rtc.SetAlarm(alarm);
     wasError("setup SetAlarm");
 
+    // Timer set to trigger in 100 seconds
+    //
+    Rtc.SetTimer(PCF8563TimerMode_Seconds, 100);
+
   #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
     // setup external interupt 
     // for some Arduino hardware they use interrupt number for the first param
@@ -205,7 +209,7 @@ void loop ()
 
 bool Alarmed()
 {
-    bool wasAlarmed = false;
+    bool result = false;
     if (interuptFlag)  // check our flag that gets sets in the interupt
     {
         interuptFlag = false; // reset the flag
@@ -214,16 +218,31 @@ bool Alarmed()
         // then allows for repeats to trigger again.
         // note that the same int pin is also used for
         // the timer trigger if also used
-        wasAlarmed = Rtc.LatchAlarmTriggeredFlag();
+        bool wasAlarmed = Rtc.LatchAlarmTriggeredFlag();
         if (!wasError("alarmed LatchAlarmTriggeredFlag"))
         {
             if (wasAlarmed)
             {
+                result = true;
                 Serial.println("alarm triggered");
             }
         }
+
+        // this gives us if the timer triggered and
+        // then allows for repeats to trigger again.
+        // note that the same int pin is also used for
+        // the alarm trigger if also used
+        bool wasTimerExpired = Rtc.LatchTimerTriggeredFlag();
+        if (!wasError("alarmed LatchTimerTriggeredFlag"))
+        {
+            if (wasTimerExpired)
+            {
+                result = true;
+                Serial.println("timer triggered");
+            }
+        }
     }
-    return wasAlarmed;
+    return result;
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
