@@ -1,13 +1,13 @@
 {
-    "name": "RTC",
-    "keywords": "RTC, DS1302, DS1307, DS3231, DS3234, AT24C32, clock",
-    "description": "A library that makes interfacing DS1302, DS1307, DS3231, and DS3234 Real Time Clock modules easy.",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Makuna/Rtc.git"
-    },
-    "version": "2.4.1",
-    "frameworks": "arduino",
-    "platforms": "*"
+  "name": "RTC",
+  "keywords": "RTC, DS1302, DS1307, DS3231, DS3234, AT24C32, PCF8563, BM8563, clock",
+  "description": "A library that makes interfacing DS1302, DS1307, DS3231, DS3234, and PCF8563/BM8563 Real Time Clock modules easy.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Makuna/Rtc.git"
+  },
+  "version": "2.4.2",
+  "frameworks": "arduino",
+  "platforms": "*"
 }
 
