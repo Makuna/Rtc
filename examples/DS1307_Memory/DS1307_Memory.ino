@@ -225,7 +225,7 @@ void loop ()
 
 void printDateTime(const RtcDateTime& dt)
 {
-    char datestring[20];
+    char datestring[26];
 
     snprintf_P(datestring, 
             countof(datestring),

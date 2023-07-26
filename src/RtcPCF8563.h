@@ -32,7 +32,7 @@ License along with Rtc.  If not, see
 
 
 //I2C Slave Address  
-const uint8_t PCF8563_ADDRESS = 0xA2;
+const uint8_t PCF8563_ADDRESS = 0x51;
 
 //PCF8563 Register Addresses
 const uint8_t PCF8563_REG_CONTROL = 0x00;
@@ -71,13 +71,17 @@ enum PCF8563SquareWavePinMode
     PCF8563SquareWavePinMode_1Hz   = 0b10000011
 };
 
+// defines the timer period for the timer and 
+// when to trigger, minutes means at the top of the minute
+// and period of 60 seconds
+//
 enum PCF8563TimerMode
 {
     PCF8563TimerMode_None            = 0b00000000,
     PCF8563TimerMode_4096thOfASecond = 0b10000000,
     PCF8563TimerMode_64thOfASecond   = 0b10000001,
     PCF8563TimerMode_Seconds         = 0b10000010,
-    PCF8563TimerMode_Minutes         = 0b10000011
+    PCF8563TimerMode_Minutes         = 0b10000011 // at the top of and by
 };
 
 enum PCF8563AlarmControlFlags
@@ -278,16 +282,16 @@ public:
         _wire.beginTransmission(PCF8563_ADDRESS);
         _wire.write(PCF8563_REG_ALARM);
 
-        uint8_t matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_MinuteMatch) ? 0x80 : 0x00;
+        uint8_t matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_MinuteMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.Minute()) | matchFlag);
        
-        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_HourMatch) ? 0x80 : 0x00;
+        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_HourMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.Hour()) | matchFlag); // 24 hour mode only
 
-        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_DayOfMonthMatch) ? 0x80 : 0x00;
+        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_DayOfMonthMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.DayOfMonth()) | matchFlag);
 
-        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_DayOfWeekMatch) ? 0x80 : 0x00;
+        matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_DayOfWeekMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.DayOfWeek()) | matchFlag);
 
         _lastError = _wire.endTransmission();

@@ -151,7 +151,7 @@ void setup ()
 
     // Alarm set to trigger every day when 
     // the hours and minutes match
-    RtcDateTime alarmTime = now + 88ul; // into the future
+    RtcDateTime alarmTime = now + 88; // into the future
     PCF8563Alarm alarm(
             alarmTime.Day(), // will be ignored in this example
             alarmTime.Hour(),
@@ -214,8 +214,10 @@ bool Alarmed()
     {
         interuptFlag = false; // reset the flag
         
-        // this gives us if the alarm triggered and
-        // then allows for repeats to trigger again.
+        // calling LatchAlarmTriggeredFlag() will return if
+        // the alarm was what triggered the interrupt and also
+        // resets the alarm flag inside the rtc which then allows 
+        // for alarms to trigger again.
         // note that the same int pin is also used for
         // the timer trigger if also used
         bool wasAlarmed = Rtc.LatchAlarmTriggeredFlag();
@@ -228,8 +230,10 @@ bool Alarmed()
             }
         }
 
-        // this gives us if the timer triggered and
-        // then allows for repeats to trigger again.
+        // calling LatchTimerTriggeredFlag() will return if
+        // the timer was what triggered the interrupt and also
+        // resets the timer flag inside the rtc which then allows 
+        // for timers to trigger again.
         // note that the same int pin is also used for
         // the alarm trigger if also used
         bool wasTimerExpired = Rtc.LatchTimerTriggeredFlag();
@@ -249,7 +253,7 @@ bool Alarmed()
 
 void printDateTime(const RtcDateTime& dt)
 {
-	char datestring[20];
+	char datestring[26];
 
 	snprintf_P(datestring, 
 			countof(datestring),
