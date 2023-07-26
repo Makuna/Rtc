@@ -1,46 +1,24 @@
 
 // CONNECTIONS:
-// DS1307 SDA --> SDA
-// DS1307 SCL --> SCL
-// DS1307 VCC --> 5v
-// DS1307 GND --> GND
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
+// PCF8563 SDA --> SDA
+// PCF8563 SCL --> SCL
+// PCF8563 VCC --> 3.3v or 5v
+// PCF8563 GND --> GND
 
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
+#include <RtcPCF8563.h>
 
 SoftwareWire myWire(SDA, SCL);
-RtcDS1307<SoftwareWire> Rtc(myWire);
+RtcPCF8563<SoftwareWire> Rtc(myWire);
  for software wire use above */
 
 /* for normal hardware wire use below */
 #include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
-RtcDS1307<TwoWire> Rtc(Wire);
+#include <RtcPCF8563.h>
+RtcPCF8563<TwoWire> Rtc(Wire);
 /* for normal hardware wire use above */
 
-
-// nothing longer than 32 bytes
-// rtc eeprom memory is 32 byte pages
-// writing is limited to each page, so it will wrap at page
-// boundaries. 
-// But reading is only limited by the buffer in Wire class which
-// by default is 32
-
-// example settings objec that will be serialized into and out of EEPROM
-struct Settings
-{
-    uint8_t size; // size of this structure for versioning/validation
-    uint8_t value1; 
-    uint16_t value2;
-    uint32_t value3;
-    float value4;
-};
-
-// where in EEPROM we will store the settings
-const uint8_t SettingsAddress = 0;
 
 // handy routine to return true if there was an error
 // but it will also print out an error message with the given topic
@@ -95,7 +73,7 @@ void setup ()
     //--------RTC SETUP ------------
     // if you are using ESP-01 then uncomment the line below to reset the pins to
     // the available pins for SDA, SCL
-    // Rtc.Begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
+    // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
     
     Rtc.Begin();
 #if defined(WIRE_HAS_TIMEOUT)
@@ -110,7 +88,16 @@ void setup ()
     {
         if (!wasError("setup IsDateTimeValid"))
         {
+            // Common Causes:
+            //    1) first time you ran and the device wasn't running yet
+            //    2) the battery on the device is low or even missing
+
             Serial.println("RTC lost confidence in the DateTime!");
+
+            // following line sets the RTC to the date & time this sketch was compiled
+            // it will also reset the valid flag internally unless the Rtc device is
+            // having an issue
+
             Rtc.SetDateTime(compiled);
         }
     }
@@ -132,32 +119,24 @@ void setup ()
             Serial.println("RTC is older than compile time, updating DateTime");
             Rtc.SetDateTime(compiled);
         }
+        else if (now > compiled)
+        {
+            Serial.println("RTC is newer than compile time, this is expected");
+        }
+        else if (now == compiled)
+        {
+            Serial.println("RTC is the same as compile time, while not expected all is still fine");
+        }
     }
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
-    Rtc.SetSquareWavePin(DS1307SquareWaveOut_Low); 
+    Rtc.StopAlarm();
+    wasError("setup StopAlarm");
+    Rtc.StopTimer();
+    wasError("setup StopTimer");
+    Rtc.SetSquareWavePin(PCF8563SquareWavePinMode_None);
     wasError("setup SetSquareWavePin");
-
-/* comment out on a second run to see that the info is stored long term */
-    // Store something in memory on the RTC
-    {
-        Settings mySettings =
-        {
-            sizeof(Settings), // size
-            42, // value1
-            420, // value2
-            18875, // value3
-            3.14159f, // value4
-        };
-
-        // store the settings, nothing longer than 32 bytes due to paging
-        uint8_t written = Rtc.SetMemory(SettingsAddress,
-            reinterpret_cast<const uint8_t*>(&mySettings),
-            sizeof(mySettings));
-        wasError("setup setMemory settings");
-    }
-/* end of comment out section */
 }
 
 void loop () 
@@ -179,49 +158,10 @@ void loop ()
         Serial.println();
     }
 
-    delay(5000);
-
-    // read data
-    {
-        Settings retrievedSettings = { 0 }; // init to zero
-
-        // get our data from the address with the given size
-        uint8_t gotten = Rtc.GetMemory(SettingsAddress,
-            reinterpret_cast<uint8_t*>(&retrievedSettings),
-            sizeof(Settings));
-        if (!wasError("loop getMemory settings"))
-        {
-            if (gotten != sizeof(Settings) ||
-                retrievedSettings.size != sizeof(Settings))
-            {
-                Serial.print("something didn't match, requested = ");
-                Serial.print(sizeof(Settings));
-                Serial.print(", gotten = ");
-                Serial.print(gotten);
-                Serial.print(", size = ");
-                Serial.print(retrievedSettings.size);
-                Serial.println();
-            }
-            Serial.print("data read (");
-            Serial.print(gotten);
-            Serial.println(")");
-            Serial.print("    size = ");
-            Serial.println(retrievedSettings.size);
-            Serial.print("    value1 = ");
-            Serial.println(retrievedSettings.value1);
-            Serial.print("    value2 = ");
-            Serial.println(retrievedSettings.value2);
-            Serial.print("    value3 = ");
-            Serial.println(retrievedSettings.value3);
-            Serial.print("    value4 = ");
-            Serial.println(retrievedSettings.value4);
-            Serial.println();
-        }
-    }
-
-    
-    delay(5000);
+    delay(10000); // ten seconds
 }
+
+#define countof(a) (sizeof(a) / sizeof(a[0]))
 
 void printDateTime(const RtcDateTime& dt)
 {

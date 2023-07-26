@@ -140,16 +140,20 @@ public:
     // if this day is that day of week, it will return this day
     RtcDateTime NextDayOfWeek(uint8_t dayOfWeek) const;
 
+    /* 
+    causes mbiguous overload for 'operator+'
+    making explicit doesn't solve it
     // add unsigned seconds
     void operator += (uint32_t seconds)
     {
         *this = *this + seconds;
     }
-
+    
     RtcDateTime operator + (uint32_t seconds) const
     {
         return RtcDateTime(TotalSeconds() + seconds);
     }
+    */
 
     // add signed seconds
     void operator += (int32_t seconds)

@@ -1,23 +1,23 @@
 
 // CONNECTIONS:
-// DS3231 SDA --> SDA
-// DS3231 SCL --> SCL
-// DS3231 VCC --> 3.3v or 5v
-// DS3231 GND --> GND
-// SQW --->  (Pin19) Don't forget to pullup (4.7k to 10k to VCC)
+// PCF8563 SDA --> SDA
+// PCF8563 SCL --> SCL
+// PCF8563 VCC --> 3.3v or 5v
+// PCF8563 GND --> GND
+// PCF8563 INT --->  (Pin19) Don't forget to pullup (4.7k to 10k to VCC)
 
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
-#include <RtcDS3231.h>
+#include <RtcPCF8563.h>
 
 SoftwareWire myWire(SDA, SCL);
-RtcDS3231<SoftwareWire> Rtc(myWire);
+RtcPCF8563<SoftwareWire> Rtc(myWire);
  for software wire use above */
 
 /* for normal hardware wire use below */
 #include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS3231.h>
-RtcDS3231<TwoWire> Rtc(Wire);
+#include <RtcPCF8563.h>
+RtcPCF8563<TwoWire> Rtc(Wire);
 /* for normal hardware wire use above */
 
 
@@ -34,8 +34,8 @@ RtcDS3231<TwoWire> Rtc(Wire);
 // Mega2560         2       3       21      20     [19]      18 
 // Leonardo         3       2       0       1       7
 
-#define RtcSquareWavePin 19 // Mega2560
-#define RtcSquareWaveInterrupt 4 // Mega2560
+#define RtcInterruptPin 19 // Mega2560
+#define RtcInterruptInterrupt 4 // Mega2560
 
 // marked volatile so interrupt can safely modify them and
 // other code can safely read and modify them
@@ -98,7 +98,7 @@ void setup ()
     Serial.begin(115200);
 
     // set the interupt pin to input mode
-    pinMode(RtcSquareWavePin, INPUT);
+    pinMode(RtcInterruptPin, INPUT);
 
     //--------RTC SETUP ------------
     // if you are using ESP-01 then uncomment the line below to reset the pins to
@@ -140,43 +140,39 @@ void setup ()
         }
     }
     
-    Rtc.Enable32kHzPin(false);
-    wasError("setup Enable32kHzPin");
-    Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeAlarmBoth); 
+    // never assume the Rtc was last configured by you, so
+    // just clear them to your needed state
+    Rtc.StopAlarm();
+    wasError("setup StopAlarm");
+    Rtc.StopTimer();
+    wasError("setup StopTimer");
+    Rtc.SetSquareWavePin(PCF8563SquareWavePinMode_None);
     wasError("setup SetSquareWavePin");
 
-    // Alarm 1 set to trigger every day when 
-    // the hours, minutes, and seconds match
+    // Alarm set to trigger every day when 
+    // the hours and minutes match
     RtcDateTime alarmTime = now + 88; // into the future
-    DS3231AlarmOne alarm1(
-            alarmTime.Day(),
+    PCF8563Alarm alarm(
+            alarmTime.Day(), // will be ignored in this example
             alarmTime.Hour(),
             alarmTime.Minute(), 
-            alarmTime.Second(),
-            DS3231AlarmOneControl_HoursMinutesSecondsMatch);
-    Rtc.SetAlarmOne(alarm1);
-    wasError("setup SetAlarmOne");
+            alarmTime.DayOfWeek(), // will be ignored in this example
+            PCF8563AlarmControl_MinuteMatch | PCF8563AlarmControl_HourMatch
+        );
+    Rtc.SetAlarm(alarm);
+    wasError("setup SetAlarm");
 
-    // Alarm 2 set to trigger at the top of the minute
-    DS3231AlarmTwo alarm2(
-            0,
-            0,
-            0, 
-            DS3231AlarmTwoControl_OncePerMinute);
-    Rtc.SetAlarmTwo(alarm2);
-    wasError("setup SetAlarmTwo");
+    // Timer set to trigger in 100 seconds
+    //
+    Rtc.SetTimer(PCF8563TimerMode_Seconds, 100);
 
-    // throw away any old alarm state before we ran
-    Rtc.LatchAlarmsTriggeredFlags();
-    wasError("setup LatchAlarmsTriggeredFlags");
-
-#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+  #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
     // setup external interupt 
     // for some Arduino hardware they use interrupt number for the first param
-    attachInterrupt(RtcSquareWaveInterrupt, InteruptServiceRoutine, FALLING);
+    attachInterrupt(RtcInterruptInterrupt, InteruptServiceRoutine, FALLING);
 #else
     // for some Arduino hardware they use interrupt pin for the first param
-    attachInterrupt(RtcSquareWavePin, InteruptServiceRoutine, FALLING);
+    attachInterrupt(RtcInterruptPin, InteruptServiceRoutine, FALLING);
 #endif
 }
 
@@ -213,28 +209,44 @@ void loop ()
 
 bool Alarmed()
 {
-    bool wasAlarmed = false;
+    bool result = false;
     if (interuptFlag)  // check our flag that gets sets in the interupt
     {
-        wasAlarmed = true;
         interuptFlag = false; // reset the flag
         
-        // this gives us which alarms triggered and
-        // then allows for others to trigger again
-        DS3231AlarmFlag flag = Rtc.LatchAlarmsTriggeredFlags();
-        if (!wasError("alarmed LatchAlarmsTriggeredFlags"))
+        // calling LatchAlarmTriggeredFlag() will return if
+        // the alarm was what triggered the interrupt and also
+        // resets the alarm flag inside the rtc which then allows 
+        // for alarms to trigger again.
+        // note that the same int pin is also used for
+        // the timer trigger if also used
+        bool wasAlarmed = Rtc.LatchAlarmTriggeredFlag();
+        if (!wasError("alarmed LatchAlarmTriggeredFlag"))
         {
-            if (flag & DS3231AlarmFlag_Alarm1)
+            if (wasAlarmed)
             {
-                Serial.println("alarm one triggered");
+                result = true;
+                Serial.println("alarm triggered");
             }
-            if (flag & DS3231AlarmFlag_Alarm2)
+        }
+
+        // calling LatchTimerTriggeredFlag() will return if
+        // the timer was what triggered the interrupt and also
+        // resets the timer flag inside the rtc which then allows 
+        // for timers to trigger again.
+        // note that the same int pin is also used for
+        // the alarm trigger if also used
+        bool wasTimerExpired = Rtc.LatchTimerTriggeredFlag();
+        if (!wasError("alarmed LatchTimerTriggeredFlag"))
+        {
+            if (wasTimerExpired)
             {
-                Serial.println("alarm two triggered");
+                result = true;
+                Serial.println("timer triggered");
             }
         }
     }
-    return wasAlarmed;
+    return result;
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
