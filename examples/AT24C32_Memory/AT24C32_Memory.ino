@@ -135,7 +135,7 @@ void loop ()
 
     // read data
     {
-        Settings retrievedSettings = { 0 }; // init to zero
+        Settings retrievedSettings = { 0, 0, 0, 0, 0 }; // init to zero
 
         // get our data from the address with the given size
         uint8_t gotten = RtcEeprom.GetMemory(SettingsAddress, 

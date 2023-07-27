@@ -32,7 +32,6 @@ License along with Rtc.  If not, see
 #include "RtcTemperature.h"
 
 
-
 //I2C Slave Address  
 const uint8_t DS3231_ADDRESS = 0x68;
 
@@ -46,6 +45,7 @@ const uint8_t DS3231_REG_STATUS    = 0x0F;
 const uint8_t DS3231_REG_AGING     = 0x10;
                                          
 const uint8_t DS3231_REG_TEMP      = 0x11;
+
 
 //DS3231 Register Data Size if not just 1
 const size_t DS3231_REG_TIMEDATE_SIZE = 7;
@@ -645,7 +645,7 @@ public:
         setReg(DS3231_REG_AGING, value);
     }
 
-private:
+protected:
     T_WIRE_METHOD& _wire;
     uint8_t _lastError;
 
