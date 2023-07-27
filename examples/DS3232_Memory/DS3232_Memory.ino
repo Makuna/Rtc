@@ -1,24 +1,24 @@
 
 // CONNECTIONS:
-// DS1307 SDA --> SDA
-// DS1307 SCL --> SCL
-// DS1307 VCC --> 5v
-// DS1307 GND --> GND
+// DS3232 SDA --> SDA
+// DS3232 SCL --> SCL
+// DS3232 VCC --> 5v
+// DS3232 GND --> GND
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 /* for software wire use below
 #include <SoftwareWire.h>  // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
+#include <RtcDS3232.h>
 
 SoftwareWire myWire(SDA, SCL);
-RtcDS1307<SoftwareWire> Rtc(myWire);
+RtcDS3232<SoftwareWire> Rtc(myWire);
  for software wire use above */
 
 /* for normal hardware wire use below */
 #include <Wire.h> // must be included here so that Arduino library object file references work
-#include <RtcDS1307.h>
-RtcDS1307<TwoWire> Rtc(Wire);
+#include <RtcDS3232.h>
+RtcDS3232<TwoWire> Rtc(Wire);
 /* for normal hardware wire use above */
 
 
@@ -136,7 +136,9 @@ void setup ()
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
-    Rtc.SetSquareWavePin(DS1307SquareWaveOut_Low); 
+    Rtc.Enable32kHzPin(false);
+    wasError("setup Enable32kHzPin");
+    Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
     wasError("setup SetSquareWavePin");
 
 /* comment out on a second run to see that the info is stored long term */
@@ -151,11 +153,15 @@ void setup ()
             3.14159f, // value4
         };
 
-        // store the settings, nothing longer than 32 bytes due to paging
+        // store the settings, nothing longer than 32 bytes due to I2C buffer
         uint8_t written = Rtc.SetMemory(SettingsAddress,
             reinterpret_cast<const uint8_t*>(&mySettings),
             sizeof(mySettings));
         wasError("setup setMemory settings");
+        if (written != sizeof(mySettings))
+        {
+            Serial.println("setup setMemory failed to write complete settings");
+        }
     }
 /* end of comment out section */
 }
@@ -183,7 +189,7 @@ void loop ()
 
     // read data
     {
-        Settings retrievedSettings = { 0, 0, 0, 0, 0 }; // init to zero
+        Settings retrievedSettings = { 0,0,0,0,0 }; // init size to zero
 
         // get our data from the address with the given size
         uint8_t gotten = Rtc.GetMemory(SettingsAddress,
