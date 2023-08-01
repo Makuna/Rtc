@@ -53,7 +53,7 @@ License along with Rtc.  If not, see
 // some platforms do not come with STL or properly defined one, specifically functional
 // if you see...
 // undefined reference to `std::__throw_bad_function_call()'
-// ...then you can either add the platform symbol to the list so NEOPIXEBUS_NO_STL gets defined or
+// ...then you can either add the platform symbol to the list so RTC_NO_STL gets defined or
 // go to boards.txt and enable c++ by adding (teensy31.build.flags.libs=-lstdc++) and set to "smallest code" option in Arduino
 //
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR) || defined(STM32L432xx) || defined(STM32L476xx) || defined(ARDUINO_ARCH_SAM)
