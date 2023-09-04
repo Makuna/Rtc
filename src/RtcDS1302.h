@@ -47,26 +47,26 @@ const uint8_t DS1302RamSize = 31;
 enum DS1302TcrResistor 
 {
     DS1302TcrResistor_Disabled = 0,
-    DS1302TcrResistor_2KOhm = B00000001,
-    DS1302TcrResistor_4KOhm = B00000010,
-    DS1302TcrResistor_8KOhm = B00000011,
-    DS1302TcrResistor_MASK  = B00000011,
+    DS1302TcrResistor_2KOhm = 0b00000001,
+    DS1302TcrResistor_4KOhm = 0b00000010,
+    DS1302TcrResistor_8KOhm = 0b00000011,
+    DS1302TcrResistor_MASK  = 0b00000011,
 };
 
 enum DS1302TcrDiodes 
 {
     DS1302TcrDiodes_None = 0,
-    DS1302TcrDiodes_One      = B00000100,
-    DS1302TcrDiodes_Two      = B00001000,
-    DS1302TcrDiodes_Disabled = B00001100,
-    DS1302TcrDiodes_MASK     = B00001100,
+    DS1302TcrDiodes_One      = 0b00000100,
+    DS1302TcrDiodes_Two      = 0b00001000,
+    DS1302TcrDiodes_Disabled = 0b00001100,
+    DS1302TcrDiodes_MASK     = 0b00001100,
 };
 
 enum DS1302TcrStatus 
 {
-    DS1302TcrStatus_Enabled  = B10100000,
-    DS1302TcrStatus_Disabled = B01010000,
-    DS1302TcrStatus_MASK     = B11110000,
+    DS1302TcrStatus_Enabled  = 0b10100000,
+    DS1302TcrStatus_Disabled = 0b01010000,
+    DS1302TcrStatus_MASK     = 0b11110000,
 };
 
 const uint8_t DS1302Tcr_Disabled = DS1302TcrStatus_Disabled | DS1302TcrDiodes_Disabled | DS1302TcrResistor_Disabled;
