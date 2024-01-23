@@ -58,7 +58,6 @@ const uint32_t c_HourAsSeconds = 60 * c_MinuteAsSeconds;
 const uint32_t c_DayAsSeconds = 24 * c_HourAsSeconds;
 const uint32_t c_WeekAsSeconds = 7 * c_DayAsSeconds;
 
-
 class RtcDateTime
 {
 public:
@@ -112,6 +111,11 @@ public:
     uint8_t Hour() const
     {
         return _hour;
+    }
+
+    RtcHourAmPm HourAmPm() const
+    {
+        return RtcHourAmPm(_hour);
     }
 
     uint8_t Minute() const
