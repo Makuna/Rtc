@@ -31,7 +31,7 @@ License along with Rtc.  If not, see
 #include "RtcDateTime.h"
 
 
-//I2C Slave Address  
+//I2C Slave Address
 const uint8_t PCF8563_ADDRESS = 0x51;
 
 //PCF8563 Register Addresses
@@ -43,7 +43,7 @@ const uint8_t PCF8563_REG_ALARM  = 0x09;
 const uint8_t PCF8563_REG_CLKOUT_CONTROL = 0x0D;
 const uint8_t PCF8563_REG_TIMER_CONTROL = 0x0E;
 const uint8_t PCF8563_REG_TIMER  = 0x0F;
-                                         
+
 //PCF8563 Register Data Size if not just 1
 const size_t PCF8563_REG_TIMEDATE_SIZE = 7;
 const size_t PCF8563_REG_ALARM_SIZE = 4;
@@ -71,7 +71,7 @@ enum PCF8563SquareWavePinMode
     PCF8563SquareWavePinMode_1Hz   = 0b10000011
 };
 
-// defines the timer period for the timer and 
+// defines the timer period for the timer and
 // when to trigger, minutes means at the top of the minute
 // and period of 60 seconds
 //
@@ -208,7 +208,7 @@ public:
 
     void SetDateTime(const RtcDateTime& dt)
     {
-        // the invalid flag is part of seconds, 
+        // the invalid flag is part of seconds,
         // so is automatically cleared when it is set
 
         // set the date time
@@ -255,9 +255,9 @@ public:
         }
 
         uint8_t second = BcdToUint8(_wire.read() & 0x7F);
-        uint8_t minute = BcdToUint8(_wire.read());
-        uint8_t hour = BcdToBin24Hour(_wire.read());
-        uint8_t dayOfMonth = BcdToUint8(_wire.read());
+        uint8_t minute = BcdToUint8(_wire.read() & 0x7F);
+        uint8_t hour = BcdToBin24Hour(_wire.read() & 0x3F);
+        uint8_t dayOfMonth = BcdToUint8(_wire.read() & 0x3F);
         _wire.read();  // throwing away day of week as we calculate it
         uint8_t monthRaw = _wire.read();
         uint16_t year = BcdToUint8(_wire.read()) + 2000;
@@ -266,7 +266,7 @@ public:
         {
             year += 100;
         }
-        uint8_t month = BcdToUint8(monthRaw & 0x7f);
+        uint8_t month = BcdToUint8(monthRaw & 0x1F);
 
 
         return RtcDateTime(year, month, dayOfMonth, hour, minute, second);
@@ -284,7 +284,7 @@ public:
 
         uint8_t matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_MinuteMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.Minute()) | matchFlag);
-       
+
         matchFlag = (alarm.ControlFlags() & PCF8563AlarmControl_HourMatch) ? 0x00 : 0x80;
         _wire.write(Uint8ToBcd(alarm.Hour()) | matchFlag); // 24 hour mode only
 
@@ -373,7 +373,7 @@ public:
         }
         return triggered;
     }
- 
+
     bool GetAlarmTriggered()
     {
         uint8_t sreg = getReg(PCF8563_REG_STATUS);
@@ -385,7 +385,7 @@ public:
         uint8_t sreg = getReg(PCF8563_REG_STATUS);
         return (sreg & _BV(PCF8563_STATUS_TF));
     }
-  
+
 private:
     T_WIRE_METHOD& _wire;
     uint8_t _lastError;
