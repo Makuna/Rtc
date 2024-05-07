@@ -256,7 +256,7 @@ public:
     RtcDateTime NextDayOfWeek(uint8_t dayOfWeek) const;
 
     /* 
-    causes mbiguous overload for 'operator+'
+    causes ambiguous overload for 'operator+'
     making explicit doesn't solve it
     // add unsigned seconds
     void operator += (uint32_t seconds)

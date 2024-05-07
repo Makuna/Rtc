@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/Makuna/Rtc.git"
   },
-  "version": "2.4.2",
+  "version": "2.4.3",
   "frameworks": "arduino",
   "platforms": "*"
 }
