@@ -280,7 +280,7 @@ public:
     {
         uint32_t totalSeconds = TotalSeconds();
         // never allowed to go before year 2000
-        if (seconds < 0 && abs(seconds) > totalSeconds)
+        if (seconds < 0 && static_cast<uint32_t>(abs(seconds)) > totalSeconds)
         {
             totalSeconds = 0;
         }
