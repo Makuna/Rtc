@@ -255,7 +255,7 @@ enum DS3234AlarmFlag
     DS3234AlarmFlag_AlarmBoth = 0x03,
 };
 
-const SPISettings c_Ds3234SpiSettings(1000000, MSBFIRST, SPI_MODE1); // CPHA must be used, so mode 1 or mode 3 are valid
+const SPISettings c_Ds3234SpiSettings(4000000, MSBFIRST, SPI_MODE3); // CPHA must be used, so mode 1 or mode 3 are valid
 
 template<class T_SPI_METHOD> class RtcDS3234
 {
