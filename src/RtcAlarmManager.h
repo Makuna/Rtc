@@ -69,14 +69,14 @@ public:
         _alarms = new Alarm[_alarmsCount];
     }
 
-	RtcAlarmManager(const RtcAlarmManager& source) :
+    RtcAlarmManager(const RtcAlarmManager& source) :
         _alarmsCount(source._alarmsCount), _seconds(source._seconds)
     {
         _alarms = new Alarm[_alarmsCount];
         memcpy(_alarms, source._alarms, _alarmsCount * sizeof(Alarm));
     }
 
-	RtcAlarmManager& operator=(const RtcAlarmManager& source)
+    RtcAlarmManager& operator=(const RtcAlarmManager& source)
     {
         if (this == &source) return *this;
 		
