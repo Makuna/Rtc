@@ -69,6 +69,27 @@ public:
         _alarms = new Alarm[_alarmsCount];
     }
 
+	RtcAlarmManager(const RtcAlarmManager& source) :
+        _alarmsCount(source._alarmsCount), _seconds(source._seconds)
+    {
+        _alarms = new Alarm[_alarmsCount];
+		memcpy(_alarms, source._alarms, _alarmsCount * sizeof(Alarm));
+    }
+
+	RtcAlarmManager& operator=(const RtcAlarmManager& source)
+    {
+		if (this == &source) return *this;
+		
+        _alarmsCount = source._alarmsCount;
+		_seconds = source._seconds;
+
+		delete[] _alarms;
+        _alarms = new Alarm[_alarmsCount];
+		memcpy(_alarms, source._alarms, _alarmsCount * sizeof(Alarm));
+		
+		return *this;
+    }
+
     ~RtcAlarmManager()
     {
         delete[] _alarms;
