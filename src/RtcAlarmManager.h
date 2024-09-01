@@ -56,22 +56,82 @@ enum AlarmAddError
     AlarmAddError_CountExceeded,
 };
 
-typedef void(*RtcAlarmCallback)(uint8_t id, const RtcDateTime& alarm);
+typedef void(*RtcAlarmCallback)(void* context, uint8_t id, const RtcDateTime& alarm);
+
 
 template <RtcAlarmCallback V_CALLBACK> class RtcAlarmManager
 {
 public:
+    // This class is not meant to be copied nor duplicated
+    // 
+    // no copy/move constructor
+    RtcAlarmManager(const RtcAlarmManager& other) = delete;
+    RtcAlarmManager(RtcAlarmManager&& other) noexcept = delete;
+    // no copy/move assignment
+    RtcAlarmManager& operator=(const RtcAlarmManager& other) = delete;
+    RtcAlarmManager& operator=(RtcAlarmManager&& other) noexcept = delete;
+    void operator=(RtcAlarmManager& other) = delete;
+    // no empty constructor with assignment
+    // RtcAlarmManager v = RtcAlarmManager(); // may consider it a functor call
+    //
+    void operator()() = delete;
+
     // construct
-    // count - the max number of active alarms
-    RtcAlarmManager(uint8_t count) :
-        _alarmsCount(count)
+    RtcAlarmManager() :
+        _alarms(nullptr),
+        _alarmsCount(0),
+        _msLast(0),
+        _seconds(0)
     {
-        _alarms = new Alarm[_alarmsCount];
     }
 
     ~RtcAlarmManager()
     {
+        Serial.print("~RtcAlarmManager (");
+        Serial.print((uint32_t)_alarms, HEX);
+        Serial.println(")");
+
         delete[] _alarms;
+    }
+
+    void Begin(uint8_t count)
+    {
+        if (count > _alarmsCount)
+        {
+            _alarmsCount = count;
+            delete [] _alarms;
+            _alarms = new Alarm[_alarmsCount];
+
+            Serial.print("RtcAlarmManager (");
+            Serial.print((uint32_t)_alarms, HEX);
+            Serial.println(")");
+
+            _msLast = millis();
+            _seconds = 0;
+        }
+    }
+
+    // Expand the number of alarms the manager can handle
+    // You can never compress, so use this rarely
+    //
+    void Expand(uint8_t count)
+    {
+        if (count > _alarmsCount)
+        {
+            Alarm* alarmsOld = _alarms;
+            _alarms = nullptr;
+            Alarm* alarms = new Alarm[count];
+
+            // copy existing
+            for (uint8_t alarm = 0; alarm < _alarmsCount; alarm++)
+            {
+                alarms[alarm] = alarmsOld[alarm];
+            }
+
+            delete [] alarmsOld;
+            _alarms = alarms;
+            _alarmsCount = count;
+        }
     }
 
     // Sync the time to the external trusted source, like
@@ -92,7 +152,7 @@ public:
     }
 
     // retrieve what the current time the AlarmManager thinks it is
-    // due to inacurrancy of the CPU timing this may not be exact,
+    // due to inaccuracy of the CPU timing this may not be exact,
     // but it is good enough for most timing needs
     // regular use of Sync() will improve this
     RtcDateTime Now() const
@@ -105,7 +165,7 @@ public:
     // add an alarm
     // when - the date and time to start triggering alarms
     // period - the type of alarm, does it repeat and how often, see AlarmPeriod enum
-    // return - if postive, the id of the Alarm, otherwise see AlarmAddError
+    // return - if positive, the id of the Alarm, otherwise see AlarmAddError
     int8_t AddAlarm(const RtcDateTime& when,
         uint32_t period)
     {
@@ -264,11 +324,16 @@ public:
                         }
 
                         // make callback
-                        V_CALLBACK(id, alarm);
+                        V_CALLBACK(static_cast<void*>(this), id, alarm);
                     }
                 }
             }
         }
+    }
+
+    static RtcAlarmManager* Instance(void* context)
+    {
+        return static_cast<RtcAlarmManager*>(context);
     }
 
 protected:
