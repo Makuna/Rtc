@@ -2,10 +2,13 @@
 #include <Wire.h> 
 #include <RtcDS1307.h> // Replace with the RTC you have
 
-// foreward declare our alarm manager callback
-void alarmCallback(uint8_t id, const RtcDateTime& alarm);
-// global instance of the manager with three possible alarms
-RtcAlarmManager<alarmCallback> Alarms(3);
+// forward declare our alarm manager callback
+void alarmCallback(void* context, uint8_t id, const RtcDateTime& alarm);
+
+// make a type of our alarm manager 
+typedef RtcAlarmManager<alarmCallback> Alarms_t;
+// global instance of the manager 
+Alarms_t Alarms;
 
 // Replace with the RTC you have
 RtcDS1307<TwoWire> Rtc(Wire);
@@ -15,6 +18,8 @@ void setup ()
     Serial.begin(115200);
 
     Serial.println("Initializing...");
+    //--------Alarms SETUP ------------
+    Alarms.Begin(3);  // max active alarms we will use is three
 
     //--------RTC SETUP ------------
     Rtc.Begin();
@@ -74,11 +79,13 @@ void loop ()
     Alarms.ProcessAlarms();
 }
 
-void alarmCallback(uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
+void alarmCallback(void* context, uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
 {
-    // NOTE:  Due to this sketch not deleting alarms, the returned ids from
-    // AddAlarm can be assumed to start at zero and increment from there.
-    // Otherwise the ids would need to be captured and used here 
+    Alarms_t* alarms = Alarms_t::Instance(context);
+
+    // NOTE:  Due to this sketch only have one manager and not deleting alarms, 
+    // the returned ids from AddAlarm can be assumed to start at zero and increment from there.
+    // Otherwise the ids would need to be captured and used from the alarms instance object
     //
     switch (id)
     {
@@ -87,7 +94,7 @@ void alarmCallback(uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
             // periodic sync from trusted source to minimize
             // drift due to inaccurate CPU timing
             RtcDateTime now = Rtc.GetDateTime();
-            Alarms.Sync(now); 
+            alarms->Sync(now);
         }
         break;
 
