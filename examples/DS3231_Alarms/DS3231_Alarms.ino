@@ -26,7 +26,7 @@ RtcDS3231<TwoWire> Rtc(Wire);
 //
 // CAUTION:  The interrupts are Arduino numbers NOT Atmel numbers
 //   and may not match (example, Mega2560 int.4 is actually Atmel Int2)
-//   this is only an issue if you plan to use the lower level interupt features
+//   this is only an issue if you plan to use the lower level interrupt features
 //
 // Board           int.0    int.1   int.2   int.3   int.4   int.5
 // ---------------------------------------------------------------
@@ -39,16 +39,16 @@ RtcDS3231<TwoWire> Rtc(Wire);
 
 // marked volatile so interrupt can safely modify them and
 // other code can safely read and modify them
-volatile uint16_t interuptCount = 0;
-volatile bool interuptFlag = false;
+volatile uint16_t interruptCount = 0;
+volatile bool interruptFlag = false;
 
-void ISR_ATTR InteruptServiceRoutine()
+void ISR_ATTR interruptServiceRoutine()
 {
-    // since this interupted any other running code,
+    // since this interrupted any other running code,
     // don't do anything that takes long and especially avoid
     // any communications calls within this routine
-    interuptCount++;
-    interuptFlag = true;
+    interruptCount++;
+    interruptFlag = true;
 }
 
 // handy routine to return true if there was an error
@@ -97,7 +97,7 @@ void setup ()
 {
     Serial.begin(115200);
 
-    // set the interupt pin to input mode
+    // set the interrupt pin to input mode
     pinMode(RtcSquareWavePin, INPUT);
 
     //--------RTC SETUP ------------
@@ -171,12 +171,12 @@ void setup ()
     wasError("setup LatchAlarmsTriggeredFlags");
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
-    // setup external interupt 
+    // setup external interrupt 
     // for some Arduino hardware they use interrupt number for the first param
-    attachInterrupt(RtcSquareWaveInterrupt, InteruptServiceRoutine, FALLING);
+    attachInterrupt(RtcSquareWaveInterrupt, interruptServiceRoutine, FALLING);
 #else
     // for some Arduino hardware they use interrupt pin for the first param
-    attachInterrupt(RtcSquareWavePin, InteruptServiceRoutine, FALLING);
+    attachInterrupt(RtcSquareWavePin, interruptServiceRoutine, FALLING);
 #endif
 }
 
@@ -198,13 +198,13 @@ void loop ()
     }
 
     // we only want to show time every 10 seconds
-    // but we want to show responce to the interupt firing
+    // but we want to show response to the interrupt firing
     for (int timeCount = 0; timeCount < 20; timeCount++)
     {
         if (Alarmed())
         {
-            Serial.print(">>Interupt Count: ");
-            Serial.print(interuptCount);
+            Serial.print(">>interrupt Count: ");
+            Serial.print(interruptCount);
             Serial.println("<<");
         }
         delay(500);
@@ -214,10 +214,10 @@ void loop ()
 bool Alarmed()
 {
     bool wasAlarmed = false;
-    if (interuptFlag)  // check our flag that gets sets in the interupt
+    if (interruptFlag)  // check our flag that gets sets in the interrupt
     {
         wasAlarmed = true;
-        interuptFlag = false; // reset the flag
+        interruptFlag = false; // reset the flag
         
         // this gives us which alarms triggered and
         // then allows for others to trigger again

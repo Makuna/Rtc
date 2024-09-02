@@ -2,16 +2,42 @@
 #include <Wire.h> 
 #include <RtcDS1307.h> // Replace with the RTC you have
 
-// forward declare our alarm manager callback
-void alarmCallback(void* context, uint8_t id, const RtcDateTime& alarm);
-
-// make a type of our alarm manager 
-typedef RtcAlarmManager<alarmCallback> Alarms_t;
 // global instance of the manager 
-Alarms_t Alarms;
+RtcAlarmManager Alarms;
 
 // Replace with the RTC you have
 RtcDS1307<TwoWire> Rtc(Wire);
+
+void alarmCallback(void* context, uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
+{
+    // demonstrating that you can pass an object as a context and how to
+    // access it
+    RtcAlarmManager* alarms = static_cast<RtcAlarmManager*>(context);
+
+    // NOTE:  Due to this sketch only have one manager and not deleting alarms, 
+    // the returned ids from AddAlarm can be assumed to start at zero and increment from there.
+    // Otherwise the ids would need to be captured and used from the context object
+    //
+    switch (id)
+    {
+    case 0:
+    {
+        // periodic sync from trusted source to minimize
+        // drift due to inaccurate CPU timing
+        RtcDateTime now = Rtc.GetDateTime();
+        alarms->Sync(now);
+    }
+    break;
+
+    case 1:
+        Serial.println("DAILY ALARM: Its 5:30am!");
+        break;
+
+    case 2:
+        Serial.println("WEEKLY ALARM: Its Saturday at 7:30am!");
+        break;
+    }
+}
 
 void setup () 
 {
@@ -76,34 +102,7 @@ void setup ()
 void loop () 
 {
     delay(1000); // simulating other work your sketch will do
-    Alarms.ProcessAlarms();
+    Alarms.ProcessAlarms(alarmCallback, static_cast<void*>(&Alarms));
 }
 
-void alarmCallback(void* context, uint8_t id, [[maybe_unused]] const RtcDateTime& alarm)
-{
-    Alarms_t* alarms = Alarms_t::Instance(context);
 
-    // NOTE:  Due to this sketch only have one manager and not deleting alarms, 
-    // the returned ids from AddAlarm can be assumed to start at zero and increment from there.
-    // Otherwise the ids would need to be captured and used from the alarms instance object
-    //
-    switch (id)
-    {
-    case 0:
-        {   
-            // periodic sync from trusted source to minimize
-            // drift due to inaccurate CPU timing
-            RtcDateTime now = Rtc.GetDateTime();
-            alarms->Sync(now);
-        }
-        break;
-
-    case 1:
-        Serial.println("DAILY ALARM: Its 5:30am!");
-        break;
-
-    case 2:
-        Serial.println("WEEKLY ALARM: Its Saturday at 7:30am!");
-        break;
-    }
-}

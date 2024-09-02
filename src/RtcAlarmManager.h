@@ -30,6 +30,19 @@ License along with Rtc.  If not, see
 #include "RtcUtility.h"
 #include "RtcDateTime.h"
 
+#if defined(RTC_NO_STL)
+
+typedef void(*RtcAlarmCallback)(void* context, uint8_t id, const RtcDateTime& alarm);
+
+#else
+
+#undef max
+#undef min
+#include <functional>
+typedef std::function<void(void* context, uint8_t id, const RtcDateTime& alarm)> RtcAlarmCallback;
+
+#endif
+
 enum AlarmPeriod
 {
     AlarmPeriod_Expired,
@@ -56,10 +69,7 @@ enum AlarmAddError
     AlarmAddError_CountExceeded,
 };
 
-typedef void(*RtcAlarmCallback)(void* context, uint8_t id, const RtcDateTime& alarm);
-
-
-template <RtcAlarmCallback V_CALLBACK> class RtcAlarmManager
+class RtcAlarmManager
 {
 public:
     // This class is not meant to be copied nor duplicated
@@ -291,7 +301,7 @@ public:
     // every second.  
     // There is little need to call this faster than a few
     // times per second but it doesn't hurt anything
-    void ProcessAlarms()
+    void ProcessAlarms(RtcAlarmCallback callback, void* context)
     {
         uint32_t msNow = millis();
         uint32_t msDelta = (msNow - _msLast);
@@ -324,16 +334,11 @@ public:
                         }
 
                         // make callback
-                        V_CALLBACK(static_cast<void*>(this), id, alarm);
+                        callback(context, id, alarm);
                     }
                 }
             }
         }
-    }
-
-    static RtcAlarmManager* Instance(void* context)
-    {
-        return static_cast<RtcAlarmManager*>(context);
     }
 
 protected:
